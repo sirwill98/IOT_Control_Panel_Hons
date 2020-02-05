@@ -1,3 +1,6 @@
 from django.contrib import admin
+from .models import Node, Map, Reading
 
-# Register your models here.
+admin.site.register(Reading)
+admin.site.register(Map)
+admin.site.register(Node)
