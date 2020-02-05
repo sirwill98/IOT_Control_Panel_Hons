@@ -2,4 +2,4 @@ from django.apps import AppConfig
 
 
 class ControlPanelConfig(AppConfig):
-    name = 'Control_Panel'
+    name = 'IOT_Control_Panel.apps.Control_Panel'
