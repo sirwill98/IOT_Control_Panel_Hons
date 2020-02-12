@@ -7,6 +7,6 @@ import requests
 
 
 def homePageView(request):
-    Url = "http://192.168.0.18/"
+    Url = "http://192.168.137.126/"
     r = requests.get(url=Url)
     return HttpResponse(r)
