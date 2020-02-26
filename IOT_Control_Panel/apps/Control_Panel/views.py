@@ -10,3 +10,6 @@ def homePageView(request):
     Url = "http://192.168.0.18/"
     r = requests.get(url=Url)
     return HttpResponse(r)
+
+def nodePageView(request):
+    return HttpResponse()
