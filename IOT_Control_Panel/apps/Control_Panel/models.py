@@ -30,8 +30,8 @@ class Map(models.Model):
 
 
 class Map_Node(models.Model):
-    Node_From = models.ForeignKey(Node.ID, on_delete=models.CASCADE)
-    Node_To = models.ForeignKey(Node.ID, on_delete=models.CASCADE)
+    Node_From = models.CharField(max_length=7)
+    Node_To = models.CharField(max_length=7)
     Node = models.ForeignKey(Node, on_delete=models.CASCADE)
     Map = models.ForeignKey(Map, on_delete=models.CASCADE)
 
