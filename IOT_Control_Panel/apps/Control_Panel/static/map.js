@@ -1,500 +1,288 @@
-var m = [20, 120, 20, 120],
-          //w = 1280 - m[1] - m[3],
-          w = 900 - m[1] - m[3],
-          h = 500 - m[0] - m[2],
-          i = 0,
-          root;
+ function init() {
+      if (window.goSamples) goSamples();  // init for these samples -- you don't need to call this
+      var $ = go.GraphObject.make;
 
-      var getDirection = function(data){
-        if(!data){
-          return 'root';
-        }
-        if(data.position){
-          return data.position;
-        }
-        return getDirection(data.parent);
-      };
-
-      var selectNode = function(target){
-        if(target){
-          var sel = d3.selectAll('#body svg .node').filter(function(d){return d.id==target.id})[0][0];
-          if(sel){
-            select(sel);
-          }
-        }
-      };
-
-      /*Mousetrap.bind('left', function(){
-        // left key pressed
-        var selection = d3.select(".node.selected")[0][0];
-        if(selection){
-          var data = selection.__data__;
-          var dir = getDirection(data);
-          switch(dir){
-            case('right'):
-            case('root'):
-              selectNode(data.parent || data.left[0]);
-              break;
-            case('left'):
-              selectNode((data.children||[])[0]);
-              break;
-            default:
-              break;
-          }
-        }
-      });
-      Mousetrap.bind('right', function(){
-        // right key pressed
-        var selection = d3.select(".node.selected")[0][0];
-        if(selection){
-          var data = selection.__data__;
-          var dir = getDirection(data);
-          switch(dir){
-            case('left'):
-            case('root'):
-              selectNode(data.parent || data.right[0]);
-              break;
-            case('right'):
-              selectNode((data.children||[])[0]);
-              break;
-            default:
-              break;
-          }
-        }
-      });
-      Mousetrap.bind('up', function(){
-        // up key pressed
-        var selection = d3.select(".node.selected")[0][0];
-        if(selection){
-          var data = selection.__data__;
-          var dir = getDirection(data);
-          switch(dir){
-            case('root'):
-              break;
-            case('left'):
-            case('right'):
-              var p = data.parent, nl = p.children || [], i=1;
-              if(p[dir]){
-                nl = p[dir];
-              }
-              l = nl.length;
-              for(; i<l; i++){
-                if(nl[i].id === data.id){
-                  selectNode(nl[i-1]);
-                  break;
-                }
-              }
-              break;
-          }
-        }
-        return false;
-      });
-      Mousetrap.bind('down', function(){
-        // down key pressed
-        // up key pressed
-        var selection = d3.select(".node.selected")[0][0];
-        if(selection){
-          var data = selection.__data__;
-          var dir = getDirection(data);
-          switch(dir){
-            case('root'):
-              break;
-            case('left'):
-            case('right'):
-              var p = data.parent, nl = p.children || [], i=0;
-              if(p[dir]){
-                nl = p[dir];
-              }
-              l = nl.length;
-              for(; i<l-1; i++){
-                if(nl[i].id === data.id){
-                  selectNode(nl[i+1]);
-                  break;
-                }
-              }
-              break;
-          }
-        }
-        return false;
-      });
-
-      Mousetrap.bind('ins', function(){
-        var selection = d3.select(".node.selected")[0][0];
-        if(selection){
-          var data = selection.__data__;
-          var dir = getDirection(data);
-          var name = prompt('New name');
-          if(name){
-            if(dir==='root'){
-              dir = data.right.length>data.left.length?'left':'right';
-            }
-            var cl = data[dir] || data.children || data._children;
-            if(!cl){
-              cl = data.children = [];
-            }
-            cl.push({name: name, position: dir});
-            update(root);
-          }
-        }
-      });
-
-      Mousetrap.bind('del', function(){
-        var selection = d3.select(".node.selected")[0][0];
-        if(selection){
-          var data = selection.__data__;
-          var dir = getDirection(data);
-          if(dir==='root'){
-            alert('Can\'t delete root');
-            return;
-          }
-          var cl = data.parent[dir] || data.parent.children;
-          if(!cl){
-            alert('Could not locate children');
-            return;
-          }
-          var i = 0, l = cl.length;
-          for(; i<l; i++){
-            if(cl[i].id === data.id){
-              if(confirm('Sure you want to delete '+data.name+'?') === true){
-                cl.splice(i, 1);
-              }
-              break;
-            }
-          }
-          selectNode(root);
-          update(root);
-        }
-      });
-
-      Mousetrap.bind('enter', function(){
-        var selection = d3.select(".node.selected")[0][0];
-        if(selection){
-          var data = selection.__data__;
-          data.name = prompt('New text:', data.name) || data.name;
-          update(root);
-        }
-      });*/
-
-      var addNodes = function(dir){
-        root[dir].push({name: 'bar', position: dir}, {name: 'none', position: dir}, {name: 'some', position: dir}, {name: 'value', position: dir});
-        update(root);
-      };
-
-      var moveNodes = function(from, to){
-        var tmp = root[from].shift();
-        tmp.position = to;
-        root[to].push(tmp);
-        update(root);
-      };
-
-      var setConnector = function(type){
-        connector = window[type];
-        update(root);
-      };
-
-      var select = function(node){
-        // Find previously selected, unselect
-        d3.select(".selected").classed("selected", false);
-        // Select current item
-        d3.select(node).classed("selected", true);
-      };
-
-      var createNew = function(){
-        root = {name: 'Root', children: [], left: [], right: []};
-        update(root, true);
-        selectNode(root);
-      };
-
-      var handleClick = function(d, index){
-        select(this);
-        update(d);
-      };
-
-      var tree = d3.layout.tree()
-          .size([h, w]);
-
-      var calcLeft = function(d){
-        var l = d.y;
-        if(d.position==='left'){
-          l = (d.y)-w/2;
-          l = (w/2) + l;
-        }
-        return {x : d.x, y : l};
-      };
-
-      var diagonal = d3.svg.diagonal()
-          .projection(function(d) { return [d.y, d.x]; });
-      var elbow = function (d, i){
-            var source = calcLeft(d.source);
-            var target = calcLeft(d.target);
-            var hy = (target.y-source.y)/2;
-            return "M" + source.y + "," + source.x
-                   + "H" + (source.y+hy)
-                   + "V" + target.x + "H" + target.y;
-          };
-      var connector = elbow;
-
-      var vis = d3.select("#body")
-        .append("svg:svg")
-          .attr("width", w
-          + m[1] + m[3])
-          .attr("height", h + m[0] + m[2])
-        .append("svg:g")
-          //.attr("transform", "translate(" + m[3] + "," + m[0] + ")")
-          .attr("transform", "translate(" + (w/2+m[3]) + "," + m[0] + ")")
-          ;
-
-//*
-      var loadJSON = function()
-      { //json file not found fix first then should work ish
-          var test;
-          var request = new XMLHttpRequest();
-          request.open("GET", "data.json", false);
-          request.send(null);
-          request.onreadystatechange = function()
+      myDiagram =
+        $(go.Diagram, "myDiagramDiv",
           {
-              if ( request.readyState === 4 && request.status === 200 )
-              {
-                test = JSON.parse(request.responseText);
-                console.log(test);
-              }
-          }
-          alert(test);
-          d3.json(test, function(json) {
-       // d3.json(fileName, function(json) {
-          var i=0, l=json.children.length;
-          window.data = root = json;
-          root.x0 = h / 2;
-          root.y0 = 0;
+            // when the user drags a node, also move/copy/delete the whole subtree starting with that node
+            "commandHandler.copiesTree": true,
+            "commandHandler.copiesParentKey": true,
+            "commandHandler.deletesTree": true,
+            "draggingTool.dragsTree": true,
+            "undoManager.isEnabled": true
+          });
 
-          json.left = [];
-          json.right = [];
-          for(; i<l; i++){
-            if(i%2){
-              json.left.push(json.children[i]);
-              json.children[i].position = 'left';
-            }else{
-              json.right.push(json.children[i]);
-              json.children[i].position = 'right';
-            }
-          }
-
-          update(root, true);
-          selectNode(root);
-        });
-      };
-//*/
-
-//*
-      var loadFreeMind = function(fileName){
-        d3.xml(fileName, 'application/xml', function(err, xml){
-          // Changes XML to JSON
-          function xmlToJson(xml) {
-
-            // Create the return object
-            var obj = {};
-
-            if (xml.nodeType == 1) { // element
-              // do attributes
-              if (xml.attributes.length > 0) {
-              obj["@attributes"] = {};
-                for (var j = 0; j < xml.attributes.length; j++) {
-                  var attribute = xml.attributes.item(j);
-                  obj["@attributes"][attribute.nodeName] = attribute.nodeValue;
-                }
-              }
-            } else if (xml.nodeType == 3) { // text
-              obj = xml.nodeValue;
-            }
-
-            // do children
-            if (xml.hasChildNodes()) {
-              for(var i = 0; i < xml.childNodes.length; i++) {
-                var item = xml.childNodes.item(i);
-                var nodeName = item.nodeName;
-                if (typeof(obj[nodeName]) == "undefined") {
-                  obj[nodeName] = xmlToJson(item);
-                } else {
-                  if (typeof(obj[nodeName].push) == "undefined") {
-                    var old = obj[nodeName];
-                    obj[nodeName] = [];
-                    obj[nodeName].push(old);
-                  }
-                  obj[nodeName].push(xmlToJson(item));
-                }
-              }
-            }
-            return obj;
-          };
-          var js = xmlToJson(xml);
-          var data = js.map.node;
-          var parseData = function(data, direction){
-            var key, i, l, dir = direction, node = {}, child;
-            for(key in data['@attributes']){
-              node[key.toLowerCase()] = data['@attributes'][key];
-            }
-            node.direction = node.direction || dir;
-            l = (data.node || []).length;
-            if(l){
-              node.children = [];
-              for(i=0; i<l; i++){
-                dir = data.node[i]['@attributes'].POSITION || dir;
-                child = parseData(data.node[i], {}, dir);
-                (node[dir] = node[dir] || []).push(child);
-                node.children.push(child);
-              }
-            }
-            return node;
-          };
-          root = parseData(data, 'right');
-          root.x0 = h / 2;
-          root.y0 = w / 2;
-          update(root, true);
-          selectNode(root);
-        });
-      };
-//*/
-
-      var toArray = function(item, arr, d){
-        arr = arr || [];
-        var dr = d || 1;
-        var i = 0, l = item.children?item.children.length:0;
-        arr.push(item);
-        if(item.position && item.position==='left'){
-          dr = -1;
-        }
-        item.y = dr * item.y;
-        for(; i < l; i++){
-          toArray(item.children[i], arr, dr);
-        }
-        return arr;
-      };
-
-      function update(source, slow) {
-        var duration = (d3.event && d3.event.altKey) || slow ? 1000 : 100;
-
-        // Compute the new tree layout.
-        var nodesLeft = tree
-          .size([h, (w/2)-20])
-          .children(function(d){
-            return (d.depth===0)?d.left:d.children;
-          })
-          .nodes(root)
-          .reverse();
-        var nodesRight = tree
-          .size([h, w/2])
-          .children(function(d){
-            return (d.depth===0)?d.right:d.children;
-          })
-          .nodes(root)
-          .reverse();
-        root.children = root.left.concat(root.right);
-        root._children = null;
-        var nodes = toArray(root);
-
-        // Normalize for fixed-depth.
-        //nodes.forEach(function(d) { d.y = d.depth * 180; });
-
-        // Update the nodes…
-        var node = vis.selectAll("g.node")
-            .data(nodes, function(d) { return d.id || (d.id = ++i); });
-
-        // Enter any new nodes at the parent's previous position.
-        var nodeEnter = node.enter().append("svg:g")
-            .attr("class", function(d){ return d.selected?"node selected":"node"; })
-            .attr("transform", function(d) { return "translate(" + source.y0 + "," + source.x0 + ")"; })
-            .on("click", handleClick);
-
-        nodeEnter.append("svg:circle")
-            .attr("r", 1e-6);
-            //.style("fill", function(d) { return d._children ? "lightsteelblue" : "#fff"; });
-
-        nodeEnter.append("svg:text")
-            .attr("x", function(d) { return d.children || d._children ? -10 : 10; })
-//            .attr("dy", ".35em")
-//            .attr("text-anchor", function(d) { return d.children || d._children ? "end" : "start"; })
-            .attr("dy", 14)
-            .attr("text-anchor", "middle")
-            .text(function(d) { return (d.name || d.text); })
-            .style("fill-opacity", 1);
-
-        // Transition nodes to their new position.
-        var nodeUpdate = node.transition()
-            //.attr("class", function(d){ return d.selected?"node selected":"node"; })
-            .duration(duration)
-            .attr("transform", function(d) { return "translate(" + d.y + "," + d.x + ")"; });
-
-        nodeUpdate.select("text")
-          .text(function(d) { return (d.name || d.text); });
-
-        nodeUpdate.select("circle")
-            .attr("r", 4.5);
-            //.style("fill", function(d) { return d._children ? "lightsteelblue" : "#fff"; });
-
-/*
-        nodeUpdate.select("text")
-            .attr("dy", 14)
-            .attr("text-anchor", "middle")
-            .style("fill-opacity", 1);
-*/
-
-        // Transition exiting nodes to the parent's new position.
-        var nodeExit = node.exit().transition()
-            .duration(duration)
-            .attr("transform", function(d) { return "translate(" + source.y + "," + source.x + ")"; })
-            .remove();
-
-        nodeExit.select("circle")
-            .attr("r", 1e-6);
-
-        nodeExit.select("text")
-            .style("fill-opacity", 1e-6);
-
-        // Update the links…
-        var link = vis.selectAll("path.link")
-            .data(tree.links(nodes), function(d) { return d.target.id; });
-
-        // Enter any new links at the parent's previous position.
-        link.enter().insert("svg:path", "g")
-            .attr("class", "link")
-            .attr("d", function(d) {
-              var o = {x: source.x0, y: source.y0};
-              return connector({source: o, target: o});
-            })
-          .transition()
-            .duration(duration)
-            .attr("d", connector);
-
-        // Transition links to their new position.
-        link.transition()
-            .duration(duration)
-            .attr("d", connector);
-
-        // Transition exiting nodes to the parent's new position.
-        link.exit().transition()
-            .duration(duration)
-            .attr("d", function(d) {
-              var o = {x: source.x, y: source.y};
-              return connector({source: o, target: o});
-            })
-            .remove();
-
-        // Stash the old positions for transition.
-        nodes.forEach(function(d) {
-          d.x0 = d.x;
-          d.y0 = d.y;
-        });
-      }
-
-      // Toggle children.
-      function toggle(d) {
-        if (d.children) {
-          d._children = d.children;
-          d.children = null;
+      // when the document is modified, add a "*" to the title and enable the "Save" button
+      myDiagram.addDiagramListener("Modified", function(e) {
+        var button = document.getElementById("SaveButton");
+        if (button) button.disabled = !myDiagram.isModified;
+        var idx = document.title.indexOf("*");
+        if (myDiagram.isModified) {
+          if (idx < 0) document.title += "*";
         } else {
-          d.children = d._children;
-          d._children = null;
+          if (idx >= 0) document.title = document.title.substr(0, idx);
         }
-      }
+      });
 
-        loadJSON();
+      // a node consists of some text with a line shape underneath
+      myDiagram.nodeTemplate =
+        $(go.Node, "Vertical",
+          { selectionObjectName: "TEXT" },
+          $(go.TextBlock,
+            {
+              name: "TEXT",
+              minSize: new go.Size(30, 15),
+              editable: true
+            },
+            // remember not only the text string but the scale and the font in the node data
+            new go.Binding("text", "text").makeTwoWay(),
+            new go.Binding("scale", "scale").makeTwoWay(),
+            new go.Binding("font", "font").makeTwoWay()),
+          $(go.Shape, "LineH",
+            {
+              stretch: go.GraphObject.Horizontal,
+              strokeWidth: 3, height: 3,
+              // this line shape is the port -- what links connect with
+              portId: "", fromSpot: go.Spot.LeftRightSides, toSpot: go.Spot.LeftRightSides
+            },
+            new go.Binding("stroke", "brush"),
+            // make sure links come in from the proper direction and go out appropriately
+            new go.Binding("fromSpot", "dir", function(d) { return spotConverter(d, true); }),
+            new go.Binding("toSpot", "dir", function(d) { return spotConverter(d, false); })),
+          // remember the locations of each node in the node data
+          new go.Binding("location", "loc", go.Point.parse).makeTwoWay(go.Point.stringify),
+          // make sure text "grows" in the desired direction
+          new go.Binding("locationSpot", "dir", function(d) { return spotConverter(d, false); })
+        );
+
+      // selected nodes show a button for adding children
+      myDiagram.nodeTemplate.selectionAdornmentTemplate =
+        $(go.Adornment, "Spot",
+          $(go.Panel, "Auto",
+            // this Adornment has a rectangular blue Shape around the selected node
+            $(go.Shape, { fill: null, stroke: "dodgerblue", strokeWidth: 3 }),
+            $(go.Placeholder, { margin: new go.Margin(4, 4, 0, 4) })
+          ),
+          // and this Adornment has a Button to the right of the selected node
+          $("Button",
+            {
+              alignment: go.Spot.Right,
+              alignmentFocus: go.Spot.Left,
+              click: addNodeAndLink  // define click behavior for this Button in the Adornment
+            },
+            $(go.TextBlock, "+",  // the Button content
+              { font: "bold 8pt sans-serif" })
+          )
+        );
+
+      // the context menu allows users to change the font size and weight,
+      // and to perform a limited tree layout starting at that node
+      myDiagram.nodeTemplate.contextMenu =
+        $("ContextMenu",
+          $("ContextMenuButton",
+            $(go.TextBlock, "Bigger"),
+            { click: function(e, obj) { changeTextSize(obj, 1.1); } }),
+          $("ContextMenuButton",
+            $(go.TextBlock, "Smaller"),
+            { click: function(e, obj) { changeTextSize(obj, 1 / 1.1); } }),
+          $("ContextMenuButton",
+            $(go.TextBlock, "Bold/Normal"),
+            { click: function(e, obj) { toggleTextWeight(obj); } }),
+          $("ContextMenuButton",
+            $(go.TextBlock, "Copy"),
+            { click: function(e, obj) { e.diagram.commandHandler.copySelection(); } }),
+          $("ContextMenuButton",
+            $(go.TextBlock, "Delete"),
+            { click: function(e, obj) { e.diagram.commandHandler.deleteSelection(); } }),
+          $("ContextMenuButton",
+            $(go.TextBlock, "Undo"),
+            { click: function(e, obj) { e.diagram.commandHandler.undo(); } }),
+          $("ContextMenuButton",
+            $(go.TextBlock, "Redo"),
+            { click: function(e, obj) { e.diagram.commandHandler.redo(); } }),
+          $("ContextMenuButton",
+            $(go.TextBlock, "Layout"),
+            {
+              click: function(e, obj) {
+                var adorn = obj.part;
+                adorn.diagram.startTransaction("Subtree Layout");
+                layoutTree(adorn.adornedPart);
+                adorn.diagram.commitTransaction("Subtree Layout");
+              }
+            }
+          )
+        );
+
+      // a link is just a Bezier-curved line of the same color as the node to which it is connected
+      myDiagram.linkTemplate =
+        $(go.Link,
+          {
+            curve: go.Link.Bezier,
+            fromShortLength: -2,
+            toShortLength: -2,
+            selectable: false
+          },
+          $(go.Shape,
+            { strokeWidth: 3 },
+            new go.Binding("stroke", "toNode", function(n) {
+              if (n.data.brush) return n.data.brush;
+              return "black";
+            }).ofObject())
+        );
+
+      // the Diagram's context menu just displays commands for general functionality
+      myDiagram.contextMenu =
+        $("ContextMenu",
+          $("ContextMenuButton",
+            $(go.TextBlock, "Paste"),
+            { click: function (e, obj) { e.diagram.commandHandler.pasteSelection(e.diagram.toolManager.contextMenuTool.mouseDownPoint); } },
+            new go.Binding("visible", "", function(o) { return o.diagram && o.diagram.commandHandler.canPasteSelection(o.diagram.toolManager.contextMenuTool.mouseDownPoint); }).ofObject()),
+          $("ContextMenuButton",
+            $(go.TextBlock, "Undo"),
+            { click: function(e, obj) { e.diagram.commandHandler.undo(); } },
+            new go.Binding("visible", "", function(o) { return o.diagram && o.diagram.commandHandler.canUndo(); }).ofObject()),
+          $("ContextMenuButton",
+            $(go.TextBlock, "Redo"),
+            { click: function(e, obj) { e.diagram.commandHandler.redo(); } },
+            new go.Binding("visible", "", function(o) { return o.diagram && o.diagram.commandHandler.canRedo(); }).ofObject()),
+          $("ContextMenuButton",
+            $(go.TextBlock, "Save"),
+            { click: function(e, obj) { save(); } }),
+          $("ContextMenuButton",
+            $(go.TextBlock, "Load"),
+            { click: function(e, obj) { load(); } })
+        );
+
+      myDiagram.addDiagramListener("SelectionMoved", function(e) {
+        var rootX = myDiagram.findNodeForKey(0).location.x;
+        myDiagram.selection.each(function(node) {
+          if (node.data.parent !== 0) return; // Only consider nodes connected to the root
+          var nodeX = node.location.x;
+          if (rootX < nodeX && node.data.dir !== "right") {
+            updateNodeDirection(node, "right");
+          } else if (rootX > nodeX && node.data.dir !== "left") {
+            updateNodeDirection(node, "left");
+          }
+          layoutTree(node);
+        });
+      });
+
+      // read in the predefined graph using the JSON format data held in the "mySavedModel" textarea
+      load();
+    }
+
+    function spotConverter(dir, from) {
+      if (dir === "left") {
+        return (from ? go.Spot.Left : go.Spot.Right);
+      } else {
+        return (from ? go.Spot.Right : go.Spot.Left);
+      }
+    }
+
+    function changeTextSize(obj, factor) {
+      var adorn = obj.part;
+      adorn.diagram.startTransaction("Change Text Size");
+      var node = adorn.adornedPart;
+      var tb = node.findObject("TEXT");
+      tb.scale *= factor;
+      adorn.diagram.commitTransaction("Change Text Size");
+    }
+
+    function toggleTextWeight(obj) {
+      var adorn = obj.part;
+      adorn.diagram.startTransaction("Change Text Weight");
+      var node = adorn.adornedPart;
+      var tb = node.findObject("TEXT");
+      // assume "bold" is at the start of the font specifier
+      var idx = tb.font.indexOf("bold");
+      if (idx < 0) {
+        tb.font = "bold " + tb.font;
+      } else {
+        tb.font = tb.font.substr(idx + 5);
+      }
+      adorn.diagram.commitTransaction("Change Text Weight");
+    }
+
+    function updateNodeDirection(node, dir) {
+      myDiagram.model.setDataProperty(node.data, "dir", dir);
+      // recursively update the direction of the child nodes
+      var chl = node.findTreeChildrenNodes(); // gives us an iterator of the child nodes related to this particular node
+      while (chl.next()) {
+        updateNodeDirection(chl.value, dir);
+      }
+    }
+
+    function addNodeAndLink(e, obj) {
+      var adorn = obj.part;
+      var diagram = adorn.diagram;
+      diagram.startTransaction("Add Node");
+      var oldnode = adorn.adornedPart;
+      var olddata = oldnode.data;
+      // copy the brush and direction to the new node data
+      var newdata = { text: "idea", brush: olddata.brush, dir: olddata.dir, parent: olddata.key };
+      diagram.model.addNodeData(newdata);
+      layoutTree(oldnode);
+      diagram.commitTransaction("Add Node");
+
+      // if the new node is off-screen, scroll the diagram to show the new node
+      var newnode = diagram.findNodeForData(newdata);
+      if (newnode !== null) diagram.scrollToRect(newnode.actualBounds);
+    }
+
+    function layoutTree(node) {
+      if (node.data.key === 0) {  // adding to the root?
+        layoutAll();  // lay out everything
+      } else {  // otherwise lay out only the subtree starting at this parent node
+        var parts = node.findTreeParts();
+        layoutAngle(parts, node.data.dir === "left" ? 180 : 0);
+      }
+    }
+
+    function layoutAngle(parts, angle) {
+      var layout = go.GraphObject.make(go.TreeLayout,
+        {
+          angle: angle,
+          arrangement: go.TreeLayout.ArrangementFixedRoots,
+          nodeSpacing: 5,
+          layerSpacing: 20,
+          setsPortSpot: false, // don't set port spots since we're managing them with our spotConverter function
+          setsChildPortSpot: false
+        });
+      layout.doLayout(parts);
+    }
+
+    function layoutAll() {
+      var root = myDiagram.findNodeForKey(0);
+      if (root === null) return;
+      myDiagram.startTransaction("Layout");
+      // split the nodes and links into two collections
+      var rightward = new go.Set(/*go.Part*/);
+      var leftward = new go.Set(/*go.Part*/);
+      root.findLinksConnected().each(function(link) {
+        var child = link.toNode;
+        if (child.data.dir === "left") {
+          leftward.add(root);  // the root node is in both collections
+          leftward.add(link);
+          leftward.addAll(child.findTreeParts());
+        } else {
+          rightward.add(root);  // the root node is in both collections
+          rightward.add(link);
+          rightward.addAll(child.findTreeParts());
+        }
+      });
+      // do one layout and then the other without moving the shared root node
+      layoutAngle(rightward, 0);
+      layoutAngle(leftward, 180);
+      myDiagram.commitTransaction("Layout");
+    }
+
+    // Show the diagram's model in JSON format
+    function save() {
+      document.getElementById("mySavedModel").value = myDiagram.model.toJson();
+      myDiagram.isModified = false;
+    }
+    function load() {
+      myDiagram.model = go.Model.fromJson(document.getElementById("mySavedModel").value);
+    }
+  
