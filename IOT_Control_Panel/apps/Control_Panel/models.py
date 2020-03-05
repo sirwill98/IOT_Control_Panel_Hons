@@ -1,16 +1,17 @@
 from django.db import models
-from datetime import date
+from datetime import datetime
+from django import utils
 
 
 class Node(models.Model):
-    ID = models.AutoField(primary_key=True, default=-1)
-    Type = models.CharField(max_length=64) #type of esp 01 or 12
+    ID = models.AutoField(primary_key=True, default=1)
+    Type = models.CharField(max_length=64, choices=[('ESP 01', 'ESP 01'), ('ESP 12', 'ESP 12')]) #type of esp 01 or 12
     Sensor = models.CharField(max_length=64) #sensor attached to esp
     Status = models.BooleanField() #connected or not
-    Date_Added = models.DateTimeField(default=date.today())
+    Date_Added = models.DateTimeField(default=datetime.now)
 
     def create_node(self, Type, Sensor, Status):
-        node = Node(Type=Type, Sensor=Sensor, Status=Status, Date_Added=date.today())
+        node = Node(Type=Type, Sensor=Sensor, Status=Status, Date_Added=datetime.now)
         node.save()
         return node
 
@@ -27,11 +28,12 @@ class Map_Node(models.Model):
 
 
 class Reading(models.Model):
+    ID = models.AutoField(primary_key=True, default=1)
     Value = models.CharField(max_length=32)
     Node = models.ForeignKey(Node, on_delete=models.CASCADE)
-    Date_Added = models.DateTimeField(default=date.today())
+    Date_Reading_Added = models.DateTimeField(default=datetime.now)
 
     def create_reading(self, Value, Node):
-        reading = Reading(Value=Value, Node=Node, Date_Added=date.today())
+        reading = Reading(Value=Value, Node=Node, Date_Reading_Added=datetime.now)
         reading.save()
         return reading
