@@ -4,11 +4,14 @@ from django import utils
 
 
 class Node(models.Model):
-    ID = models.AutoField(primary_key=True, default=1)
-    Type = models.CharField(max_length=64, choices=[('ESP 01', 'ESP 01'), ('ESP 12', 'ESP 12')]) #type of esp 01 or 12
+    ID = models.AutoField(primary_key=True)
+    Type = models.CharField(max_length=64, choices=[('Gateway', 'Gateway'), ('Relay', 'Relay'), ('Endpoint', 'Endpoint')], blank=True, null=True)
     Sensor = models.CharField(max_length=64) #sensor attached to esp
     Status = models.BooleanField() #connected or not
     Date_Added = models.DateTimeField(default=datetime.now)
+
+    def save(self, *args, **kwargs):
+        super().save(*args, **kwargs)
 
     def create_node(self, Type, Sensor, Status):
         node = Node(Type=Type, Sensor=Sensor, Status=Status, Date_Added=datetime.now)
@@ -17,8 +20,8 @@ class Node(models.Model):
 
 
 class Map_Node(models.Model):
-    Node_From = models.CharField(max_length=7)
-    Node_To = models.CharField(max_length=7)
+    Node_From = models.OneToOneField(Node, on_delete=models.CASCADE, related_name='Node_From_Name', blank=True, null=True)
+    Node_To = models.OneToOneField(Node, on_delete=models.CASCADE, related_name='Node_To_Name', blank=True, null=True)
     Node = models.ForeignKey(Node, on_delete=models.CASCADE)
 
     def create_map_node(self, Node_From, Node_To, Node):
@@ -28,7 +31,7 @@ class Map_Node(models.Model):
 
 
 class Reading(models.Model):
-    ID = models.AutoField(primary_key=True, default=1)
+    ID = models.AutoField(primary_key=True)
     Value = models.CharField(max_length=32)
     Node = models.ForeignKey(Node, on_delete=models.CASCADE)
     Date_Reading_Added = models.DateTimeField(default=datetime.now)

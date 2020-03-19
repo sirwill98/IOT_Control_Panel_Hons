@@ -76,10 +76,8 @@ WSGI_APPLICATION = 'IOT_Control_Panel.wsgi.application'
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.mysql',
-        'NAME': 'IOTPanel',
-        'USER': 'IOTPanel',
-        'PASSWORD': 'Password123',
+        'ENGINE': 'django.db.backends.sqlite3',
+        'NAME': 'db.sqlite3',
         'HOST': 'localhost',
         'PORT': '3306',
     }

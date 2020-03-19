@@ -29,7 +29,7 @@
             maxSelectionCount: 1, // users can select only one part at a time
             validCycle: go.Diagram.CycleDestinationTree, // make sure users can only create trees
             "clickCreatingTool.archetypeNodeData": { // allow double-click in background to create a new node
-              name: "(new person)",
+              name: "(new node)",
               title: "",
               comments: ""
             },
@@ -71,26 +71,26 @@
         }
       });
 
-      // manage boss info manually when a node or link is deleted from the diagram
+      // manage Node_Above info manually when a node or link is deleted from the diagram
       myDiagram.addDiagramListener("SelectionDeleting", function(e) {
         var part = e.subject.first(); // e.subject is the myDiagram.selection collection,
         // so we'll get the first since we know we only have one selection
-        myDiagram.startTransaction("clear boss");
+        myDiagram.startTransaction("clear Node_Above");
         if (part instanceof go.Node) {
           var it = part.findTreeChildrenNodes(); // find all child nodes
-          while (it.next()) { // now iterate through them and clear out the boss information
+          while (it.next()) { // now iterate through them and clear out the Node_Above information
             var child = it.value;
-            var bossText = child.findObject("boss"); // since the boss TextBlock is named, we can access it by name
-            if (bossText === null) return;
-            bossText.text = "";
+            var Node_AboveText = child.findObject("Node_Above"); // since the Node_Above TextBlock is named, we can access it by name
+            if (Node_AboveText === null) return;
+            Node_AboveText.text = "";
           }
         } else if (part instanceof go.Link) {
           var child = part.toNode;
-          var bossText = child.findObject("boss"); // since the boss TextBlock is named, we can access it by name
-          if (bossText === null) return;
-          bossText.text = "";
+          var Node_AboveText = child.findObject("Node_Above"); // since the Node_Above TextBlock is named, we can access it by name
+          if (Node_AboveText === null) return;
+          Node_AboveText.text = "";
         }
-        myDiagram.commitTransaction("clear boss");
+        myDiagram.commitTransaction("clear Node_Above");
       });
 
       var levelColors = ["#AC193D", "#2672EC", "#8C0095", "#5133AB",
@@ -233,8 +233,8 @@
                 { row: 2, column: 0 },
                 new go.Binding("text", "key", function(v) { return "ID: " + v; })),
               $(go.TextBlock, textStyle(),
-                { name: "boss", row: 2, column: 3, }, // we include a name so we can access this TextBlock when deleting Nodes/Links
-                new go.Binding("text", "parent", function(v) { return "Boss: " + v; })),
+                { name: "Node_Above", row: 2, column: 3, }, // we include a name so we can access this TextBlock when deleting Nodes/Links
+                new go.Binding("text", "parent", function(v) { return "Node_Above: " + v; })),
               $(go.TextBlock, textStyle(),  // the comments
                 {
                   row: 3, column: 0, columnSpan: 5,
@@ -253,26 +253,10 @@
       myDiagram.nodeTemplate.contextMenu =
         $("ContextMenu",
           $("ContextMenuButton",
-            $(go.TextBlock, "Vacate Position"),
+            $(go.TextBlock, "Remove node"),
             {
               click: function(e, obj) {
-                var node = obj.part.adornedPart;
-                if (node !== null) {
-                  var thisemp = node.data;
-                  myDiagram.startTransaction("vacate");
-                  // update the key, name, and comments
-                  myDiagram.model.setDataProperty(thisemp, "name", "(Vacant)");
-                  myDiagram.model.setDataProperty(thisemp, "comments", "");
-                  myDiagram.commitTransaction("vacate");
-                }
-              }
-            }
-          ),
-          $("ContextMenuButton",
-            $(go.TextBlock, "Remove Role"),
-            {
-              click: function(e, obj) {
-                // reparent the subtree to this node's boss, then remove the node
+                // reparent the subtree to this node's Node_Above, then remove the node
                 var node = obj.part.adornedPart;
                 if (node !== null) {
                   myDiagram.startTransaction("reparent remove");
@@ -290,7 +274,7 @@
             }
           ),
           $("ContextMenuButton",
-            $(go.TextBlock, "Remove Department"),
+            $(go.TextBlock, "Remove node and below"),
             {
               click: function(e, obj) {
                 // remove the whole subtree, including the node itself
@@ -335,26 +319,11 @@
       });
 
     } // end init
-
-    // Show the diagram's model in JSON format
-    function save() {
-      document.getElementById("mySavedModel").value = myDiagram.model.toJson();
-      myDiagram.isModified = false;
-    }
-    function load() {
-      myDiagram.model = go.Model.fromJson(document.getElementById("mySavedModel").value);
-      // make sure new data keys are unique positive integers
-      var lastkey = 1;
-      myDiagram.model.makeUniqueKeyFunction = function(model, data) {
-        var k = data.key || lastkey;
-        while (model.findNodeDataForKey(k)) k++;
-        data.key = lastkey = k;
-        return k;
-      };
-    }
   </script>
 </head>
 <body onload="init()">
+<form action='actionUrl' method='GET'>
+</form>
 <div id="sample">
   <div id="myDiagramDiv" style="background-color: #34343C; border: solid 1px black; height: 570px;"></div>
   <p><button id="zoomToFit">Zoom to Fit</button> <button id="centerRoot">Center on root</button></p>
@@ -367,18 +336,11 @@
     <div>
       <button id="SaveButton" onclick="save()">Save</button>
       <button onclick="load()">Load</button>
-      Diagram Model saved in JSON format:
     </div>
     <textarea id="mySavedModel" style="width:100%; height:270px;">
-        { "class": "go.TreeModel",
-          "nodeDataArray": [
-        {"key":1, "name":"Gateway", "title":"Gateway"},
-        {"key":2, "name":"Relay", "title":"Relay", "parent":1},
-        {"key":3, "name":"Relay", "title":"Relay", "parent":1},
-        {"key":4, "name":"Relay", "title":"Relay", "parent":2},
-        {"key":5, "name":"Endpoint", "title":"Endpoint", "parent":4}
-         ]
-        }
+        {% block includes %}
+        {{ mytext }}
+        {% endblock includes %}
     </textarea>
   </div>
 </div>

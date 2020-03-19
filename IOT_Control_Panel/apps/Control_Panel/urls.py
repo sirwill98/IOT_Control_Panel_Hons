@@ -6,6 +6,6 @@ from . import views
 urlpatterns = [
     path('', views.homePageView, name='home'),
     path('node', views.nodePageView, name='node'),
-    path('register/<str:ip>/', views.nodeRegisterView, name='node register'),
-    path('register/', views.nodePreegisterView, name='node preregister')
+    path('register/', views.nodeRegisterView, name='node register'),
+    path('actionUrl/', views.test, name='test')
 ]
