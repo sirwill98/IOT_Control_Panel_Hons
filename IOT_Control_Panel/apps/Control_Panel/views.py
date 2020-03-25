@@ -48,8 +48,13 @@ def homePageView2(request):
 
 
 def nodePageView(request):
+    template = loader.get_template('sendTest.html')
+    return HttpResponse(template)
 
-    return HttpResponse()
+
+def test(request):
+
+    return HttpResponse(request.GET)
 
 
 def nodeRegisterView(request):
