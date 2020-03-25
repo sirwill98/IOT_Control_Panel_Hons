@@ -6,7 +6,7 @@ import json
 from .models import Node, Map_Node
 from django.template import loader
 import requests
-
+container = ""
 def homePageView(request):
     template = loader.get_template('home.html')
     args = {}
@@ -36,13 +36,14 @@ def homePageView(request):
     jsonContainer = jsonContainer.replace(",HERE", "")
     jsonContainer = jsonContainer.replace("/", '"')
     jsonContainer = jsonContainer.replace("?", ' ')
+    container = jsonContainer.strip()
     args['mytext'] = jsonContainer.strip()
     request.session['container'] = jsonContainer
     return HttpResponse(template.render(args, request))
 
 
 def homePageView2(request):
-    Url = "http://192.168.0.18/"
+    Url = "http://192.168.0.17/temp"
     r = requests.get(url=Url)
     return HttpResponse(r)
 
@@ -52,9 +53,15 @@ def nodePageView(request):
     return HttpResponse(template)
 
 
-def test(request):
-
-    return HttpResponse(request.GET)
+# def test(request):
+#     template = loader.get_template('sendTest.html')
+#     newNodetype = ""
+#     newNodesensor = "no sensor currently"
+#     newNodestatus = False
+#     N = Node(Type=newNodetype, Sensor=newNodesensor, Status=newNodestatus)
+#     N.save()
+#     print("test")
+#     return HttpResponse(template.render(None, request))
 
 
 def nodeRegisterView(request):
@@ -78,7 +85,3 @@ def nodeRegisterView(request):
         container = container.replace("/", '"')
         args['mytext'] = container.strip()
     return HttpResponse(template.render(args, request))
-
-
-def test(request):
-    return HttpResponse()

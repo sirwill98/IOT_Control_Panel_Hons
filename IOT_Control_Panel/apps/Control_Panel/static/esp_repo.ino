@@ -19,6 +19,7 @@ const char* ssid = "";
 const char* password = "";
 const char* OTA_SSID = "WillsLaptop";
 const char* OTA_PASSWORD = "Password123";
+const int ESP_BUILTIN_LED = 2;
 byte temperature = 0;
 byte highest = 0;
 int after_ID = 0;
@@ -57,10 +58,6 @@ void makeReading()
 
 void handleOTA()
 {
-  //String valueStr = String(value);
-  //String reply = "I Guess it Worked?";
-  //server.send(200, "text/plain", reply);
-  //OTA code goes here
   WiFi.mode(WIFI_STA);
   WiFi.begin(OTA_SSID, OTA_PASSWORD);
   while (WiFi.waitForConnectResult() != WL_CONNECTED) {
@@ -171,6 +168,7 @@ String ID = "0";
 String AP_ssid = "Relay" + ID;
 String ssid = "";
 String password = "";
+const int ESP_BUILTIN_LED = 2;
 int temperature = 0;
 const char* OTA_SSID = "WillsLaptop";
 const char* OTA_PASSWORD = "Password123";
@@ -213,10 +211,6 @@ void fSetHighest()
 
 void handleOTA()
 {
-  //String valueStr = String(value);
-  //String reply = "I Guess it Worked?";
-  //server.send(200, "text/plain", reply);
-  //OTA code goes here
   WiFi.mode(WIFI_STA);
   WiFi.begin(OTA_SSID, OTA_PASSWORD);
   while (WiFi.waitForConnectResult() != WL_CONNECTED) {
@@ -373,8 +367,8 @@ void fSetHighest()
 void handleOTA()
 {
   //OTA code goes here
-  WiFi.mode(WIFI_STA);
-  WiFi.begin(OTA_SSID, OTA_PASSWORD);
+  WiFi.mode(WIFI_AP);
+  WiFi.softAP(AP_ssid);
   while (WiFi.waitForConnectResult() != WL_CONNECTED) {
     Serial.println(".");
   }
@@ -473,22 +467,5 @@ void handlePassBack()
 
 String ipToString(const IPAddress& address){
   return String(address[0]) + "." + address[1] + "." + address[2] + "." + address[3];
-}  url += "?sensor_reading=";
-      url += readingInt;
-      client.print(String("GET ") + url + " HTTP/1.1\r\n" +
-                "Host: " + host + "\r\n" +
-                "Connection: close\r\n\r\n");
-      unsigned long timeout = millis();
-      while (client.available() == 0)
-      {
-        if (millis() - timeout > 5000)
-        {
-          Serial.println(">>> Client Timeout !");
-          client.stop();
-          return;
-        }
-      }
-    }
-  }
 }
 //gateway code>>
