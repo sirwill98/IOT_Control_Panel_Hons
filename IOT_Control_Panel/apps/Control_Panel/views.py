@@ -81,9 +81,8 @@ def test(request):
     print("test")
     return HttpResponse(template.render(None, request))
 
-
+# nodemap works on specific request, page not redirecting on node register
 def nodeRegisterView(request):
-    template = loader.get_template('NodeMapPage.html')
     if request.method == 'POST':
         if os.path.isfile('data.json'):
             # create a form instance and populate it with data from the request:
@@ -110,7 +109,7 @@ def nodeRegisterView(request):
                 with open('data.json', 'w', encoding='utf-8') as f:
                     json.dump(data2.strip(), f, ensure_ascii=False, indent=4)
                 request.session['mapid'] = key
-                return HttpResponse(template.render(None, request))
+                return HttpResponseRedirect('/nodeMapRegister')
 
         # if a GET (or any other method) we'll create a blank form
     else:
@@ -118,16 +117,18 @@ def nodeRegisterView(request):
         return render(request, 'NodePage.html', {'form': form})
 
 def nodeMapRegisterView(request):
-    template = loader.get_template('home.html')
     if request.method == 'POST':
-        if os.path.isfile('data.json'):
-            # create a form instance and populate it with data from the request:
-            form = MapNodeForm(request.POST)
-            # check whether it's valid:
-            if form.is_valid():
+        # create a form instance and populate it with data from the request:
+        form = MapNodeForm(request.POST)
+        template = loader.get_template('home.html')
+        # check whether it's valid:
+        print("here-1")
+        if form.is_valid():
+            if os.path.isfile('data.json'):
+                print("here")
                 args = {}
                 obj = form.save(commit=False)
-                obj.id = request.session.get('mapid')
+                obj.Node = Node.objects.filter(ID=request.session.get('mapid'))
                 obj.save()
                 json_data = open('data.json')
                 data1 = json.loads(json_data.read())  # deserialises it
@@ -141,9 +142,8 @@ def nodeMapRegisterView(request):
                 with open('data.json', 'w', encoding='utf-8') as f:
                     json.dump(data2.strip(), f, ensure_ascii=False, indent=4)
                 args['mytext'] = data2.strip()
-                return HttpResponse(template.render(args, request))
-
-        # if a GET (or any other method) we'll create a blank form
+                return HttpResponseRedirect(template.render(args, request))
     else:
         form = MapNodeForm()
-        return render(request, 'NodePage.html', {'form': form})
+        MapNodeForm.ID = request.session.get('mapid')
+        return render(request, 'NodeMapPage.html', {'form': form})

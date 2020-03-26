@@ -10,6 +10,9 @@ class Node(models.Model):
     Status = models.BooleanField() #connected or not
     Date_Added = models.DateTimeField(default=datetime.now)
 
+    def __str__(self):
+        return self.Type + ' ' + str(self.ID)
+
     def save(self, *args, **kwargs):
         super().save(*args, **kwargs)
 
