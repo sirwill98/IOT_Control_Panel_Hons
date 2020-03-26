@@ -6,7 +6,7 @@ from django import utils
 class Node(models.Model):
     ID = models.AutoField(primary_key=True)
     Type = models.CharField(max_length=64, choices=[('Gateway', 'Gateway'), ('Relay', 'Relay'), ('Endpoint', 'Endpoint')], blank=True, null=True)
-    Sensor = models.CharField(max_length=64) #sensor attached to esp
+    Sensor = models.CharField(max_length=64, default="N/A") #sensor attached to esp
     Status = models.BooleanField() #connected or not
     Date_Added = models.DateTimeField(default=datetime.now)
 
