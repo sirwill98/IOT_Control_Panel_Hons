@@ -7,5 +7,6 @@ urlpatterns = [
     path('node/', views.nodePageView, name='node'),
     path('register/', views.nodeRegisterView, name='node register'),
     path('gateway/', views.homePageView2, name='gatewayView'),
-    path('nodeMapRegister/', views.nodeMapRegisterView, name='node map register')
+    path('nodeMapRegister/', views.nodeMapRegisterView, name='node map register'),
+    path('deletenode/<int:ID>', views.deletenode, name='Delete Node')
 ]

@@ -23,9 +23,10 @@ class Node(models.Model):
 
 
 class Map_Node(models.Model):
-    Node_From = models.OneToOneField(Node, on_delete=models.CASCADE, related_name='Node_From_Name', blank=True, null=True)
-    Node_To = models.OneToOneField(Node, on_delete=models.CASCADE, related_name='Node_To_Name', blank=True, null=True)
-    Node = models.ForeignKey(Node, on_delete=models.CASCADE)
+    Map_Node_ID = models.AutoField(primary_key=True)
+    Node_From = models.ForeignKey(Node, on_delete=models.CASCADE, blank=True, null=True, related_name="Node_From")
+    Node_To = models.ForeignKey(Node, on_delete=models.CASCADE, blank=True, null=True, related_name="Node_To")
+    Node = models.ForeignKey(Node, on_delete=models.CASCADE, related_name="Node")
 
     def create_map_node(self, Node_From, Node_To, Node):
         map_node = Map_Node(Node_From=Node_From, Node=Node, Node_To=Node_To)
@@ -34,7 +35,7 @@ class Map_Node(models.Model):
 
 
 class Reading(models.Model):
-    ID = models.AutoField(primary_key=True)
+    Reading_ID = models.AutoField(primary_key=True)
     Value = models.CharField(max_length=32)
     Node = models.ForeignKey(Node, on_delete=models.CASCADE)
     Date_Reading_Added = models.DateTimeField(default=datetime.now)

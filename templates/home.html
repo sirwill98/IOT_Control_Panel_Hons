@@ -258,6 +258,7 @@
               click: function(e, obj) {
                 // reparent the subtree to this node's Node_Above, then remove the node
                 var node = obj.part.adornedPart;
+                var key = node.key
                 if (node !== null) {
                   myDiagram.startTransaction("reparent remove");
                   var chl = node.findTreeChildrenNodes();
@@ -269,6 +270,7 @@
                   // and now remove the selected node itself
                   myDiagram.model.removeNodeData(node.data);
                   myDiagram.commitTransaction("reparent remove");
+                  window.open('/deletenode/' + key);
                 }
               }
             }
@@ -333,10 +335,6 @@
     </div>
   </div>
   <div>
-    <div>
-      <button id="SaveButton" onclick="save()">Save</button>
-      <button onclick="load()">Load</button>
-    </div>
     <textarea id="mySavedModel" style="width:100%; height:270px;">
         {% block includes %}
         {{ mytext }}

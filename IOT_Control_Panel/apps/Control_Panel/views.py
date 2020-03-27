@@ -6,34 +6,21 @@ import json
 from .models import Node, Map_Node
 from .forms import NodeForm, MapNodeForm
 from django.template import loader
+from django.views.generic.edit import UpdateView
 import os.path
 import requests
 container = ""
-def homePageView(request):
-    if 'container' in request.session:
-        del request.session['container']
-    args = {}
+
+
+def addtojson():
     jsonContainer = "{ /class/: /go.TreeModel/,/nodeDataArray/: [HERE]}"
-    template = loader.get_template('home.html')
-    if os.path.isfile('data.json'):
-        json_data = open('data.json')
-        data1 = json.loads(json_data.read())  # deserialises it
-        data2 = json.dumps(data1)  # json formatted string
-        json_data.close()
-        data2 = data2.replace("\\", '')
-        data2 = data2[:-1]
-        data2 = data2[1:]
-        args['mytext'] = data2.strip()
-        return HttpResponse(template.render(args, request))
     for each in Node.objects.all():
         formatting = "{/key/:KEYrep, /name/:NAMErep, /title/:TITLErep, /parent/:PARENTrep}"
-        key = each.ID
-        formatting = formatting.replace("KEYrep", str(key))
+        formatting = formatting.replace("KEYrep", str(each.ID))
         name = each.Type
         name = name + "?" + str(each.ID)
         formatting = formatting.replace("NAMErep", "/" + name + "/")
-        title = each.Type
-        formatting = formatting.replace("TITLErep", "/" + title + "/")
+        formatting = formatting.replace("TITLErep", "/" + each.Type + "/")
         if Map_Node.objects.filter(Node=each).exists():
             obj = Map_Node.objects.get(Node=each)
             if obj.Node_From:
@@ -50,6 +37,28 @@ def homePageView(request):
     jsonContainer = jsonContainer.replace(",HERE", "")
     jsonContainer = jsonContainer.replace("/", '"')
     jsonContainer = jsonContainer.replace("?", ' ')
+    return jsonContainer
+
+
+
+def homePageView(request):
+    if 'container' in request.session:
+        del request.session['container']
+    args = {}
+    template = loader.get_template('home.html')
+    if os.path.isfile('data.json'):
+        json_data = open('data.json')
+        data1 = json.loads(json_data.read())  # deserialises it
+        data2 = json.dumps(data1)  # json formatted string
+        json_data.close()
+        if addtojson() == data2:
+            data2 = data2.replace("\\", '')
+            data2 = data2[:-1]
+            data2 = data2[1:]
+            if request.session['container'] == data2:
+                args['mytext'] = data2.strip()
+                return HttpResponse(template.render(args, request))
+    jsonContainer = addtojson()
     args['mytext'] = jsonContainer.strip()
     request.session['container'] = jsonContainer
     if os.path.isfile('data.json'):
@@ -81,8 +90,11 @@ def test(request):
     print("test")
     return HttpResponse(template.render(None, request))
 
+
 # nodemap works on specific request, page not redirecting on node register
 def nodeRegisterView(request):
+    while 'mapid' in request.session:
+        del request.session['mapid']
     if request.method == 'POST':
         if os.path.isfile('data.json'):
             # create a form instance and populate it with data from the request:
@@ -90,24 +102,7 @@ def nodeRegisterView(request):
             # check whether it's valid:
             if form.is_valid():
                 form.save()
-                json_data = open('data.json')
-                data1 = json.loads(json_data.read())  # deserialises it
-                data2 = json.dumps(data1)
-                data2 = data2[:-1]
-                data2 = data2[1:]
-                formatting = ",{/key/:KEYrep, /name/:NAMErep, /title/:TITLErep}"
-                key = Node.objects.latest("Date_Added").ID + 1
-                title = form['Type'].value()
-                formatting = formatting.replace("KEYrep", str(key))
-                formatting = formatting.replace("NAMErep", "/" + title + str(key) + "/")
-                formatting = formatting.replace("TITLErep", "/" + title + "/")
-                data2 = data2[:len(data2) - 2] + formatting + data2[len(data2) - 2:]
-                args = {}
-                data2 = data2.replace(" ", "")
-                data2 = data2.replace("/", '"')
-                data2 = data2.replace("\\", '')
-                with open('data.json', 'w', encoding='utf-8') as f:
-                    json.dump(data2.strip(), f, ensure_ascii=False, indent=4)
+                key = Node.objects.latest("Date_Added").ID
                 request.session['mapid'] = key
                 return HttpResponseRedirect('/nodeMapRegister')
 
@@ -122,28 +117,64 @@ def nodeMapRegisterView(request):
         form = MapNodeForm(request.POST)
         template = loader.get_template('home.html')
         # check whether it's valid:
+        form.ID = request.session.get('mapid')
         print("here-1")
         if form.is_valid():
             if os.path.isfile('data.json'):
                 print("here")
-                args = {}
                 obj = form.save(commit=False)
-                obj.Node = Node.objects.filter(ID=request.session.get('mapid'))
+                obj.Node = Node.objects.latest('Date_Added')
                 obj.save()
                 json_data = open('data.json')
                 data1 = json.loads(json_data.read())  # deserialises it
                 data2 = json.dumps(data1)
                 data2 = data2[:-1]
                 data2 = data2[1:]
-                data2 = data2[:len(data2) - 2] + data2[len(data2) - 2:]
+                formatting = ",{/key/:KEYrep, /name/:NAMErep, /title/:TITLErep}"
+                title = obj.Node.Type
+                formatting = formatting.replace("KEYrep", str(obj.Node.ID))
+                formatting = formatting.replace("NAMErep", "/" + title + str(obj.Node.ID) + "/")
+                formatting = formatting.replace("TITLErep", "/" + title + "/")
+                data2 = data2[:len(data2) - 2] + formatting + data2[len(data2) - 2:]
+                args = {}
                 data2 = data2.replace(" ", "")
                 data2 = data2.replace("/", '"')
                 data2 = data2.replace("\\", '')
                 with open('data.json', 'w', encoding='utf-8') as f:
                     json.dump(data2.strip(), f, ensure_ascii=False, indent=4)
                 args['mytext'] = data2.strip()
-                return HttpResponseRedirect(template.render(args, request))
+                return HttpResponseRedirect('/')
     else:
         form = MapNodeForm()
-        MapNodeForm.ID = request.session.get('mapid')
+        form.ID = request.session.get('mapid')
+        form.Node = Node.objects.filter(ID=request.session.get('mapid'))
         return render(request, 'NodeMapPage.html', {'form': form})
+
+
+def deletenode(request, ID):
+    Node.objects.filter(ID=ID).delete()
+    if 'container' in request.session:
+        del request.session['container']
+    args = {}
+    template = loader.get_template('home.html')
+    if os.path.isfile('data.json'):
+        json_data = open('data.json')
+        data1 = json.loads(json_data.read())  # deserialises it
+        data2 = json.dumps(data1)  # json formatted string
+        json_data.close()
+        if addtojson() == data2:
+            data2 = data2.replace("\\", '')
+            data2 = data2[:-1]
+            data2 = data2[1:]
+            if request.session['container'] == data2:
+                args['mytext'] = data2.strip()
+                return HttpResponse(template.render(args, request))
+    jsonContainer = addtojson()
+    args['mytext'] = jsonContainer.strip()
+    request.session['container'] = jsonContainer
+    if os.path.isfile('data.json'):
+        print("File exist")
+    else:
+        with open('data.json', 'w', encoding='utf-8') as f:
+            json.dump(jsonContainer.strip(), f, ensure_ascii=False, indent=4)
+    return HttpResponse(template.render(args, request))

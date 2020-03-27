@@ -12,9 +12,7 @@ class MapNodeForm(forms.ModelForm):
     class Meta:
         model = Map_Node
         Node_from = forms.ModelChoiceField(
-            queryset=Node.objects.filter(ID__lt=Node.objects.latest('Date_Added').ID), required=False)
+            queryset=Node.objects.filter(ID__isnull=False, ID__lt=Node.objects.filter(Date_Added__isnull=False).latest('Date_Added').ID), required=False)
         Node_to = forms.ModelChoiceField(
-            queryset=Node.objects.filter(ID__lt=Node.objects.latest('Date_Added').ID), required=False)
-        Node = forms.ModelChoiceField(
-            queryset=Node.objects.latest('Date_Added'), required=True, disabled=True)
-        fields = ['Node_From', 'Node_To', 'ID']
+            queryset=Node.objects.filter(ID__isnull=False, ID__lt=Node.objects.filter(Date_Added__isnull=False).latest('Date_Added').ID), required=False)
+        fields = ['Node_From', 'Node_To']
