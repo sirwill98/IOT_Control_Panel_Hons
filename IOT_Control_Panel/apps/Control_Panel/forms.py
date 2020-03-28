@@ -18,3 +18,14 @@ class MapNodeForm(forms.ModelForm):
             queryset=Node.objects.filter(Type__exact="Relay", ID__isnull=False, ID__lt=Node.objects.filter(
                 Date_Added__isnull=False).latest('Date_Added').ID) , required=False)
         fields = ['Node_From', 'Node_To']
+
+#not tested
+class UpdateForm(forms):
+    class Meta:
+        Node = forms.ModelChoiceField(queryset=Node.objects.all())
+        File = forms.ChoiceField(choices=())
+
+    def __init__(self, FileChoices, *args, **kwargs):
+        super(UpdateForm, self).__init__(*args, **kwargs)
+        if FileChoices:
+            self.Meta.File.choices = [(str(k), v)for k, v in enumerate(FileChoices)]

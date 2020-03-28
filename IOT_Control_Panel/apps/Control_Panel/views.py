@@ -4,7 +4,7 @@ from django.shortcuts import render
 from django.http import HttpResponse, HttpResponseRedirect
 import json
 from .models import Node, Map_Node
-from .forms import NodeForm, MapNodeForm
+from .forms import NodeForm, MapNodeForm, UpdateForm
 from django.template import loader
 from django.views.generic.edit import UpdateView
 import os.path
@@ -85,16 +85,26 @@ def nodePageView(request):
 def nodeEspRegisterView(request):
     return HttpResponse(request)
 
-
+#not tested
 def nodeEspUpdateView(request, ID):
-    newdir = ""#drive to contain the compiled code
-    newespfile = ""#the generated file
-    cmd2 = "arduino --pref build.path=C:\\users\\billy\\desktop\\test\\"+newdir+"--verify C:\\users\\billy\\dekstop\\" \
-                                                                                "djangoard\\"+newespfile+".ino"
-    ip = Node.objects.filter(ID=ID).LocalIP
-    file = "C:\\users\\billy\\desktop\\test\\"+newdir+"\\program.ino.bin"#the file containinf the code
-    cmd = "python c:/users/billy/desktop/espota.py -d -i " + ip + " -f " + file
-    return HttpResponse(request)
+    list = []
+    if request.method == 'POST':
+        form = UpdateForm(request.POST)
+        if form.is_valid():
+            newdir = Node.objects.filter(ID=ID).__str__
+            newespfile = ""#the generated file
+            cmd2 = "arduino --pref build.path=C:\\users\\billy\\desktop\\test\\"+newdir+"--verify C:\\users\\billy\\dekstop\\" \
+                                                                                        "djangoard\\"+newespfile+".ino"
+            ip = Node.objects.filter(ID=ID).LocalIP
+            file = "C:\\users\\billy\\desktop\\test\\"+newdir+"\\program.ino.bin"#the file containinf the code
+            cmd = "python c:/users/billy/desktop/espota.py -d -i " + ip + " -f " + file
+    else:
+        for file in os.listdir("C:\\users\\billy\\desktop\\test\\"+Node.objects.filter(ID=ID).__str__):
+            filename = os.fsdecode(file)
+            if filename.endswith(".ino"):
+                list.append((filename, filename))
+        form = UpdateForm(list)
+        return render(request, 'NodePage.html', {'form': form})
 
 
 # nodemap works on specific request, page not redirecting on node register
