@@ -5,7 +5,10 @@ from django import utils
 
 class Node(models.Model):
     ID = models.AutoField(primary_key=True)
-    Type = models.CharField(max_length=64, choices=[('Gateway', 'Gateway'), ('Relay', 'Relay'), ('Endpoint', 'Endpoint')], blank=True, null=True)
+    Type = models.CharField(max_length=64, choices=[('Gateway', 'Gateway'), ('Relay', 'Relay'), ('Endpoint', 'Endpoint')
+                                                    ], blank=True, null=True)
+    LocalIP = models.GenericIPAddressField(protocol="IPv4", default="192.168.137.")
+    AccessPointIP = models.GenericIPAddressField(protocol="IPv4", default="192.168.139.", null=True)
     Sensor = models.CharField(max_length=64, default="N/A") #sensor attached to esp
     Status = models.BooleanField() #connected or not
     Date_Added = models.DateTimeField(default=datetime.now)
@@ -14,12 +17,22 @@ class Node(models.Model):
         return self.Type + ' ' + str(self.ID)
 
     def save(self, *args, **kwargs):
+        ipstr = str(self.LocalIP)
+        apipstr = str(self.AccessPointIP)
+        self.LocalIP = self.LocalIP[:apipstr.rfind(".")] + "." + str(Node.objects.latest('Date_Added').ID+1)
+        self.AccessPointIP = self.AccessPointIP[:apipstr.rfind(".")] + "." + str(Node.objects.latest('Date_Added').ID+1)
         super().save(*args, **kwargs)
 
-    def create_node(self, Type, Sensor, Status):
-        node = Node(Type=Type, Sensor=Sensor, Status=Status, Date_Added=datetime.now)
+    def create_node(self, Type, Sensor, Status, LocalIP, AccessPointIP):
+        node = Node(Type=Type, Sensor=Sensor, Status=Status, Date_Added=datetime.now, LocalIP=LocalIP,
+                    AccessPointIP=AccessPointIP)
         node.save()
         return node
+
+    def delete(self, *args, **kwargs):
+        Map_Node.objects.filter(Node=self).delete()
+        Map_Node.objects.filter(Node_From=self).delete()
+        super(self).delete()
 
 
 class Map_Node(models.Model):

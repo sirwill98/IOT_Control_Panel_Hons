@@ -12,6 +12,8 @@ import requests
 container = ""
 
 
+
+
 def addtojson():
     jsonContainer = "{ /class/: /go.TreeModel/,/nodeDataArray/: [HERE]}"
     for each in Node.objects.all():
@@ -70,7 +72,7 @@ def homePageView(request):
 
 
 def homePageView2(request):
-    Url = "http://192.168.0.17/temp"
+    Url = "http://192.168.0.17/ota"
     r = requests.get(url=Url)
     return HttpResponse(r)
 
@@ -80,15 +82,19 @@ def nodePageView(request):
     return HttpResponse(template)
 
 
-def test(request):
-    template = loader.get_template('NodePage.html')
-    newNodetype = ""
-    newNodesensor = "no sensor currently"
-    newNodestatus = False
-    N = Node(Type=newNodetype, Sensor=newNodesensor, Status=newNodestatus)
-    N.save()
-    print("test")
-    return HttpResponse(template.render(None, request))
+def nodeEspRegisterView(request):
+    return HttpResponse(request)
+
+
+def nodeEspUpdateView(request, ID):
+    newdir = ""#drive to contain the compiled code
+    newespfile = ""#the generated file
+    cmd2 = "arduino --pref build.path=C:\\users\\billy\\desktop\\test\\"+newdir+"--verify C:\\users\\billy\\dekstop\\" \
+                                                                                "djangoard\\"+newespfile+".ino"
+    ip = Node.objects.filter(ID=ID).LocalIP
+    file = "C:\\users\\billy\\desktop\\test\\"+newdir+"\\program.ino.bin"#the file containinf the code
+    cmd = "python c:/users/billy/desktop/espota.py -d -i " + ip + " -f " + file
+    return HttpResponse(request)
 
 
 # nodemap works on specific request, page not redirecting on node register
