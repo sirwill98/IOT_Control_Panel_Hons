@@ -19,13 +19,20 @@ class MapNodeForm(forms.ModelForm):
                 Date_Added__isnull=False).latest('Date_Added').ID) , required=False)
         fields = ['Node_From', 'Node_To']
 
-#not tested
-class UpdateForm(forms):
-    class Meta:
-        Node = forms.ModelChoiceField(queryset=Node.objects.all())
-        File = forms.ChoiceField(choices=())
 
-    def __init__(self, FileChoices, *args, **kwargs):
-        super(UpdateForm, self).__init__(*args, **kwargs)
+class PreUpdateForm(forms.Form):
+    Node = forms.ModelChoiceField(queryset=Node.objects.all())
+
+
+class UpdateForm(forms.Form):
+    File = forms.ChoiceField(choices=())
+
+    def __init__(self, FileChoices):
+        super(UpdateForm, self).__init__()
         if FileChoices:
-            self.Meta.File.choices = [(str(k), v)for k, v in enumerate(FileChoices)]
+            self.fields["File"] = forms.ChoiceField(choices=((fileformatter(o), fileformatter(o)) for o in enumerate(FileChoices)))
+
+
+def fileformatter(formatstring):
+    outputstr = (str(formatstring[1]).split(",")[0])[1:]
+    return outputstr

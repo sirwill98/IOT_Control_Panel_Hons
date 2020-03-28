@@ -288,6 +288,17 @@
                 }
               }
             }
+          ),
+        $("ContextMenuButton",
+            $(go.TextBlock, "Update node code"),
+            {
+              click: function(e, obj) {
+                var node = obj.part.adornedPart;
+                if (node !== null) {
+                  window.open('/esppreupdate/',"_self");
+                }
+              }
+            }
           )
         );
 

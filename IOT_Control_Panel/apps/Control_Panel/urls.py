@@ -7,6 +7,7 @@ urlpatterns = [
     path('node/', views.nodePageView, name='node'),
     path('register/', views.nodeRegisterView, name='node register'),
     path('espregister/', views.nodeEspRegisterView, name='esp register'),
+    path('esppreupdate/', views.nodeEspPreUpdateView, name='begin esp update'),
     path('espupdate/<int:ID>', views.nodeEspUpdateView, name='esp update'),
     path('gateway/', views.homePageView2, name='gatewayView'),
     path('nodeMapRegister/', views.nodeMapRegisterView, name='node map register'),

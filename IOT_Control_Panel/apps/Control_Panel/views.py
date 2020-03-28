@@ -4,7 +4,7 @@ from django.shortcuts import render
 from django.http import HttpResponse, HttpResponseRedirect
 import json
 from .models import Node, Map_Node
-from .forms import NodeForm, MapNodeForm, UpdateForm
+from .forms import NodeForm, MapNodeForm, UpdateForm, PreUpdateForm
 from django.template import loader
 from django.views.generic.edit import UpdateView
 import os.path
@@ -85,9 +85,20 @@ def nodePageView(request):
 def nodeEspRegisterView(request):
     return HttpResponse(request)
 
+
+def nodeEspPreUpdateView(request):
+    if request.method == 'POST':
+        form = PreUpdateForm(request.POST)
+        if form.is_valid():
+            return HttpResponseRedirect('/espupdate/' + str(form.cleaned_data['Node'].ID))
+    else:
+        form = PreUpdateForm()
+        return render(request, 'NodePreUpdatePage.html', {'form': form})
+
 #not tested
 def nodeEspUpdateView(request, ID):
     list = []
+    args = {}
     if request.method == 'POST':
         form = UpdateForm(request.POST)
         if form.is_valid():
@@ -98,13 +109,35 @@ def nodeEspUpdateView(request, ID):
             ip = Node.objects.filter(ID=ID).LocalIP
             file = "C:\\users\\billy\\desktop\\test\\"+newdir+"\\program.ino.bin"#the file containinf the code
             cmd = "python c:/users/billy/desktop/espota.py -d -i " + ip + " -f " + file
+            template = loader.get_template('home.html')
+            if os.path.isfile('data.json'):
+                json_data = open('data.json')
+                data1 = json.loads(json_data.read())  # deserialises it
+                data2 = json.dumps(data1)  # json formatted string
+                json_data.close()
+                if addtojson() == data2:
+                    data2 = data2.replace("\\", '')
+                    data2 = data2[:-1]
+                    data2 = data2[1:]
+                    if request.session['container'] == data2:
+                        args['mytext'] = data2.strip()
+                        return HttpResponse(template.render(args, request))
     else:
-        for file in os.listdir("C:\\users\\billy\\desktop\\test\\"+Node.objects.filter(ID=ID).__str__):
-            filename = os.fsdecode(file)
-            if filename.endswith(".ino"):
-                list.append((filename, filename))
-        form = UpdateForm(list)
-        return render(request, 'NodePage.html', {'form': form})
+        filedrive = 'C:/users/billy/desktop/test/'+str(Node.objects.filter(ID=ID).get().__str__())
+        drive = os.path.normpath(filedrive)
+        if os.path.exists(drive):
+            for file in os.listdir(drive):
+                filename = os.fsdecode(file)
+                if filename.endswith(".txt"):
+                    list.append((filename, filename))
+            form = UpdateForm(list)
+            return render(request, 'ESPUpdatePage.html', {'form': form})
+        else:
+            args = {}
+            template = loader.get_template('ESPUpdatePage.html')
+            args['mytext'] = "Error, Folder at path:" + drive + "  does not exist, create folder and place an " \
+                                                                "arduino file to be uploaded before trying again"
+            return HttpResponse(template.render(args, request))
 
 
 # nodemap works on specific request, page not redirecting on node register
