@@ -45,6 +45,9 @@ line {
   color: #1181B8;
 }
 
+iframe{
+    overflow:hidden;
+}
 a:link, a:visited {
   color: #000;
   text-decoration: none;

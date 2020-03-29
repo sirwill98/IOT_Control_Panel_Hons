@@ -133,6 +133,7 @@
         if (!(node1 instanceof go.Node)) return false;  // must be a Node
         if (node1 === node2) return false;  // cannot work for yourself
         if (node2.isInTreeOf(node1)) return false;  // cannot work for someone who works for you
+        if (node1.hb.title == "Endpoint" && node2.hb.title == "Gateway") return false;
         return true;
       }
 
@@ -258,7 +259,7 @@
               click: function(e, obj) {
                 // reparent the subtree to this node's Node_Above, then remove the node
                 var node = obj.part.adornedPart;
-                var key = node.key
+                var key = node.key;
                 if (node !== null) {
                   myDiagram.startTransaction("reparent remove");
                   var chl = node.findTreeChildrenNodes();
@@ -271,20 +272,6 @@
                   myDiagram.model.removeNodeData(node.data);
                   myDiagram.commitTransaction("reparent remove");
                   window.open('/deletenode/' + key,"_self");
-                }
-              }
-            }
-          ),
-          $("ContextMenuButton",
-            $(go.TextBlock, "Remove node and below"),
-            {
-              click: function(e, obj) {
-                // remove the whole subtree, including the node itself
-                var node = obj.part.adornedPart;
-                if (node !== null) {
-                  myDiagram.startTransaction("remove dept");
-                  myDiagram.removeParts(node.findTreeParts());
-                  myDiagram.commitTransaction("remove dept");
                 }
               }
             }
@@ -330,7 +317,15 @@
         myDiagram.scale = 1;
         myDiagram.commandHandler.scrollToPart(myDiagram.findNodeForKey(1));
       });
-
+      window.setInterval(function()
+      {
+        reloadIFrame()
+      }, 5000);
+      function reloadIFrame()
+      {
+        console.log('reloading..');
+        document.getElementById('tempframe').contentWindow.location.reload();
+      }
     } // end init
   </script>
 </head>
@@ -339,6 +334,7 @@
 </form>
 <div id="sample">
     <div id="myDiagramDiv" style="background-color: #34343C; border: solid 1px black; height: 570px;"></div>
+    <iframe src="{% url 'Latest Reading' %}" width="300" height="250" scrolling="no" id="tempframe"></iframe>
     <p><button id="zoomToFit">Zoom to Fit</button> <button id="centerRoot">Center on root</button></p>
     <form>
         <button formaction="{% url 'node register' %}">Create Node</button>

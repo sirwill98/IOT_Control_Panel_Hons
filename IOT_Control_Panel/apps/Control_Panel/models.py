@@ -9,6 +9,7 @@ class Node(models.Model):
                                                     ], blank=True, null=True)
     LocalIP = models.GenericIPAddressField(protocol="IPv4", default="192.168.137.")
     AccessPointIP = models.GenericIPAddressField(protocol="IPv4", default="192.168.139.", null=True)
+    OTAIP = models.GenericIPAddressField(protocol="IPv4", default="192.168.0.", null=True)
     Sensor = models.CharField(max_length=64, default="N/A") #sensor attached to esp
     Status = models.BooleanField() #connected or not
     Date_Added = models.DateTimeField(default=datetime.now)
@@ -19,8 +20,10 @@ class Node(models.Model):
     def save(self, *args, **kwargs):
         ipstr = str(self.LocalIP)
         apipstr = str(self.AccessPointIP)
-        self.LocalIP = self.LocalIP[:apipstr.rfind(".")] + "." + str(Node.objects.latest('Date_Added').ID+1)
+        otaipstr = str(self.OTAIP)
+        self.LocalIP = self.LocalIP[:ipstr.rfind(".")] + "." + str(Node.objects.latest('Date_Added').ID+1)
         self.AccessPointIP = self.AccessPointIP[:apipstr.rfind(".")] + "." + str(Node.objects.latest('Date_Added').ID+1)
+        self.OTAIP = self.OTAIP[:otaipstr.rfind(".")] + "." + str(Node.objects.latest('Date_Added').ID+100)
         super().save(*args, **kwargs)
 
     def create_node(self, Type, Sensor, Status, LocalIP, AccessPointIP):

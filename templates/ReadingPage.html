@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <meta charset="utf-8">
+  <title>Temp Reading</title>
+
+  <script src="https://cdn.zingchart.com/zingchart.min.js"></script>
+  <style>
+    html,
+    body {
+      height: 100%;
+      width: 100%;
+    }
+
+    #myChart {
+      height: 100%;
+      width: 100%;
+      min-height: 150px;
+    }
+
+    .zc-ref {
+      display: none;
+    }
+  </style>
+</head>
+
+<body>
+  <h1 hidden id="data">
+      {% block includes %}
+        {{ data }}
+      {% endblock includes %}
+  </h1>
+  <h1 hidden id="highest">
+      {% block inc %}
+        {{ highest }}
+      {% endblock inc %}
+  </h1>
+  <h3 align="center">Current Temperature</h3>
+  <h3 align="center" class="error">
+      {% block inc %}
+        {{ Error }}
+      {% endblock inc %}
+  </h3>
+  <div id='myChart'><a class="zc-ref" href="https://www.zingchart.com/"></a></div>
+  <script>
+    //ZC.LICENSE = ["569d52cefae586f634c54f86dc99e6a9", "b55b025e438fa8a98e32482b5f768ff5"];
+    var highest = 30;
+    var data = parseInt(document.getElementById('data').textContent);
+
+    var myConfig = {
+      type: "gauge",
+      globals: {
+        fontSize: 25
+      },
+      scale: {
+        'size-factor': "100%" //Modify your gauge chart size.
+      },
+      plotarea: {
+        marginTop: 80
+      },
+      plot: {
+        size: '100%',
+        csize: '5%',
+        valueBox: {
+          placement: 'center',
+          text: '%v', //default
+          fontSize: 35,
+        }
+      },
+      tooltip: {
+        borderRadius: 1
+      },
+      scaleR: {
+        aperture: 180,
+        "values":"0:" + highest + ":1",
+        center: {
+          visible: false
+        },
+        tick: {
+          visible: false
+        },
+        item: {
+          offsetR: 0,
+          rules: [{
+            rule: '%i == 9',
+            offsetX: 15
+          }]
+        },
+        labels: ['0', '', '', '', '', ''/*, '', '', '', '', '10'*/
+                , '', '', '', '', ''
+        , '', '', '', '', ''
+        , '', '', '', '', ''
+        , '', '', '', '', ''
+        , '', '', '', '', '30'],
+        ring: {
+          size: 10,
+          rules: [{
+              rule: '%v <= 5',
+              backgroundColor: '#0d98e5'
+            },
+            {
+              rule: '%v >= 5 && %v <= 10',
+              backgroundColor: '#6ec0ef'
+            },
+            {
+              rule: '%v >= 10 && %v <= 15',
+              backgroundColor: '#FFFFE0'
+            },
+            {
+              rule: '%v >= 15 && %v <= 20',
+              backgroundColor: '#FFA500'
+            },
+            {
+              rule: '%v >= 20 && %v <= 25',
+              backgroundColor: '#DC143C'
+            },
+            {
+              rule: '%v >= 25',
+              backgroundColor: '#8B0000'
+            }
+          ]
+        }
+      },
+      series: [{
+        values: [data], // starting value
+        backgroundColor: 'black',
+        indicator: [5, 5, 5, 5, 0.75],
+        animation: {
+          effect: 2,
+          method: 1,
+          sequence: 4,
+          speed: 900
+        },
+      }]
+    };
+
+    zingchart.render({
+      id: 'myChart',
+      data: myConfig,
+      height: 250,
+      width: '100%'
+    });
+  </script>
+</body>
+
+</html>

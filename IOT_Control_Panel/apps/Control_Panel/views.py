@@ -72,7 +72,7 @@ def homePageView(request):
 
 
 def homePageView2(request):
-    Url = "http://192.168.0.17/ota"
+    Url = "http://192.168.0.17/high"
     r = requests.get(url=Url)
     return HttpResponse(r)
 
@@ -198,6 +198,21 @@ def nodeMapRegisterView(request):
         form.ID = request.session.get('mapid')
         form.Node = Node.objects.filter(ID=request.session.get('mapid'))
         return render(request, 'NodeMapPage.html', {'form': form})
+
+
+def readingPage(request):
+    HighestUrl = "http://192.168.0.17/high"
+    TempUrl = "http://192.168.0.17/temp"
+    try:
+        highest = int(requests.get(url=HighestUrl).text.split(".")[0])
+        temp = int(requests.get(url=TempUrl).text.split(".")[0])
+        args = {'data': temp, 'highest': highest}
+    except:
+        highest = 0
+        temp = 0
+        args = {'data': temp, 'highest': highest}
+    template = loader.get_template('ReadingPage.html')
+    return HttpResponse(template.render(args, request))
 
 
 def deletenode(request, ID):

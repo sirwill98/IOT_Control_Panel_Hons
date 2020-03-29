@@ -1,0 +1,10 @@
+<form action="/espupdate/" method="post">
+    {% csrf_token %}
+    {{ form }}
+    <input type="submit" value="Submit">
+</form>
+<h3 id="mySavedModel">
+    {% block includes %}
+    {{ mytext }}
+    {% endblock includes %}
+</h3>

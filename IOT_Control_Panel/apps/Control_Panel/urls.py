@@ -11,5 +11,6 @@ urlpatterns = [
     path('espupdate/<int:ID>', views.nodeEspUpdateView, name='esp update'),
     path('gateway/', views.homePageView2, name='gatewayView'),
     path('nodeMapRegister/', views.nodeMapRegisterView, name='node map register'),
-    path('deletenode/<int:ID>', views.deletenode, name='Delete Node')
+    path('deletenode/<int:ID>', views.deletenode, name='Delete Node'),
+    path('reading/', views.readingPage, name='Latest Reading')
 ]
