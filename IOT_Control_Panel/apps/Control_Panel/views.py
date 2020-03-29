@@ -206,11 +206,13 @@ def readingPage(request):
     try:
         highest = int(requests.get(url=HighestUrl).text.split(".")[0])
         temp = int(requests.get(url=TempUrl).text.split(".")[0])
-        args = {'data': temp, 'highest': highest}
+        read = "current temperature"
+        args = {'data': temp, 'highest': highest, 'read': read}
     except:
         highest = 0
         temp = 0
-        args = {'data': temp, 'highest': highest}
+        error = "Reading Failed"
+        args = {'data': temp, 'highest': highest, 'error': error}
     template = loader.get_template('ReadingPage.html')
     return HttpResponse(template.render(args, request))
 

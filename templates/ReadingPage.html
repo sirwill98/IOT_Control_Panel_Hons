@@ -22,6 +22,11 @@
     .zc-ref {
       display: none;
     }
+
+    .error
+    {
+        font-family: Arial, Helvetica, sans-serif;
+    }
   </style>
 </head>
 
@@ -36,11 +41,13 @@
         {{ highest }}
       {% endblock inc %}
   </h1>
-  <h3 align="center">Current Temperature</h3>
-  <h3 align="center" class="error">
-      {% block inc %}
-        {{ Error }}
-      {% endblock inc %}
+  <h3 class="error" align="center">
+  {% block read %}
+      {{ read }}
+  {% endblock read %}
+  {% block error %}
+      {{ error }}
+  {% endblock error %}
   </h3>
   <div id='myChart'><a class="zc-ref" href="https://www.zingchart.com/"></a></div>
   <script>
