@@ -4,7 +4,7 @@
 <head>
   <meta charset="utf-8">
   <title>Temp Reading</title>
-
+   <link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/bootstrap/3.2.0/css/bootstrap.min.css">
   <script src="https://cdn.zingchart.com/zingchart.min.js"></script>
   <style>
     html,
@@ -54,7 +54,10 @@
     //ZC.LICENSE = ["569d52cefae586f634c54f86dc99e6a9", "b55b025e438fa8a98e32482b5f768ff5"];
     var highest = 30;
     var data = parseInt(document.getElementById('data').textContent);
-
+    //cunts fucked
+    var test = {{ rule|safe }};
+    console.log(test);
+    //test=test.replace(/\\"/g, '"');
     var myConfig = {
       type: "gauge",
       globals: {
@@ -102,31 +105,7 @@
         , '', '', '', '', '30'],
         ring: {
           size: 10,
-          rules: [{
-              rule: '%v <= 5',
-              backgroundColor: '#0d98e5'
-            },
-            {
-              rule: '%v >= 5 && %v <= 10',
-              backgroundColor: '#6ec0ef'
-            },
-            {
-              rule: '%v >= 10 && %v <= 15',
-              backgroundColor: '#FFFFE0'
-            },
-            {
-              rule: '%v >= 15 && %v <= 20',
-              backgroundColor: '#FFA500'
-            },
-            {
-              rule: '%v >= 20 && %v <= 25',
-              backgroundColor: '#DC143C'
-            },
-            {
-              rule: '%v >= 25',
-              backgroundColor: '#8B0000'
-            }
-          ]
+          rules:test
         }
       },
       series: [{

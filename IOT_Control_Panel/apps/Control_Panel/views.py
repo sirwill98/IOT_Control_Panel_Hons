@@ -3,6 +3,7 @@ from django.shortcuts import render
 # Create your views here.
 from django.http import HttpResponse, HttpResponseRedirect
 import json
+from django.contrib import messages
 from .models import Node, Map_Node
 from .forms import NodeForm, MapNodeForm, UpdateForm, PreUpdateForm
 from django.template import loader
@@ -60,6 +61,7 @@ def homePageView(request):
             if request.session['container'] == data2:
                 args['mytext'] = data2.strip()
                 return HttpResponse(template.render(args, request))
+
     jsonContainer = addtojson()
     args['mytext'] = jsonContainer.strip()
     request.session['container'] = jsonContainer
@@ -83,6 +85,8 @@ def nodePageView(request):
 
 
 def nodeEspRegisterView(request):
+    messages.info(request, 'A new node has connected, to set it up click the add node button')
+    messages.add_message(request, messages.INFO, 'Hello world.')
     return HttpResponse(request)
 
 
@@ -207,7 +211,12 @@ def readingPage(request):
         highest = int(requests.get(url=HighestUrl).text.split(".")[0])
         temp = int(requests.get(url=TempUrl).text.split(".")[0])
         read = "current temperature"
-        args = {'data': temp, 'highest': highest, 'read': read}
+        rule = json.dumps([{"rule": "%v <= 5","backgroundColor": "#0d98e5"},{"rule": "%v >= 5 && %v <= 10","backgroundColor":
+                "#6ec0ef"},{"rule": "%v >= 10 && %v <= 15","backgroundColor": "#66ff99"},{"rule": "%v >= 15 && %v <= 20"
+                ,"backgroundColor": "#99ff33"},{"rule": "%v >= 20 && %v <= 25","backgroundColor": "#FFA500"},{"rule":
+                "%v >= 25","backgroundColor": "#DC143C"}])
+        print(rule)
+        args = {'data': temp, 'highest': highest, 'read': read, 'rule': rule}
     except:
         highest = 0
         temp = 0

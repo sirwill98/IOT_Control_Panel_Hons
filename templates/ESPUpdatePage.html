@@ -1,6 +1,8 @@
+<link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/bootstrap/3.2.0/css/bootstrap.min.css">
+<link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/bootstrap/3.2.0/css/bootstrap-theme.min.css">
 <form action="/espupdate/" method="post">
     {% csrf_token %}
-    {{ form }}
+    {{ form.as_p }}
     <input type="submit" value="Submit">
 </form>
 <h3 id="mySavedModel">

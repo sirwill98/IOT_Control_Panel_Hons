@@ -1,5 +1,6 @@
 from django.db import models
 from datetime import datetime
+from jsonfield import JSONField
 from django import utils
 
 
@@ -60,3 +61,10 @@ class Reading(models.Model):
         reading = Reading(Value=Value, Node=Node, Date_Reading_Added=datetime.now)
         reading.save()
         return reading
+
+class readingPageGenerator(models.Model):
+    Page_ID = models.AutoField(primary_key=True)
+    Lowest = models.IntegerField()
+    Highest = models.IntegerField()
+    Scale = JSONField(null=True)
+
