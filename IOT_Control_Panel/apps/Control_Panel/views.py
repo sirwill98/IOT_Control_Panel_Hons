@@ -10,6 +10,7 @@ from django.template import loader
 from django.views.generic.edit import UpdateView
 import os.path
 import requests
+from django.contrib.staticfiles import finders
 container = ""
 
 
@@ -85,8 +86,15 @@ def nodePageView(request):
 
 
 def nodeEspRegisterView(request):
-    obj = waitingNodes()
-    obj.save()
+    x_forwarded_for = request.META.get('HTTP_X_FORWARDED_FOR')
+    if x_forwarded_for:
+        ip = x_forwarded_for.split(',')[0]
+    else:
+        ip = request.META.get('REMOTE_ADDR')
+    if not waitingNodes.objects.filter(IP=ip):
+        obj = waitingNodes()
+        obj.IP = ip
+        obj.save()
     return HttpResponse(request)
 
 
@@ -99,50 +107,58 @@ def nodeEspPreUpdateView(request):
         form = PreUpdateForm()
         return render(request, 'NodePreUpdatePage.html', {'form': form})
 
+
 #not tested
-def nodeEspUpdateView(request, ID):
+def nodeEspUpdateView(request):
     list = []
     args = {}
+    nodeID = request.session["nodeID"]
     if request.method == 'POST':
         form = UpdateForm(request.POST)
-        if form.is_valid():
-            newdir = Node.objects.filter(ID=ID).__str__
-            newespfile = ""#the generated file
-            cmd2 = "arduino --pref build.path=C:\\users\\billy\\desktop\\test\\"+newdir+"--verify C:\\users\\billy\\dekstop\\" \
-                                                                                        "djangoard\\"+newespfile+".ino"
-            ip = Node.objects.filter(ID=ID).LocalIP
-            file = "C:\\users\\billy\\desktop\\test\\"+newdir+"\\program.ino.bin"#the file containinf the code
-            cmd = "python c:/users/billy/desktop/espota.py -d -i " + ip + " -f " + file
-            template = loader.get_template('home.html')
-            if os.path.isfile('data.json'):
-                json_data = open('data.json')
-                data1 = json.loads(json_data.read())  # deserialises it
-                data2 = json.dumps(data1)  # json formatted string
-                json_data.close()
-                if addtojson() == data2:
-                    data2 = data2.replace("\\", '')
-                    data2 = data2[:-1]
-                    data2 = data2[1:]
-                    if request.session['container'] == data2:
-                        args['mytext'] = data2.strip()
-                        return HttpResponse(template.render(args, request))
-    else:
-        filedrive = 'C:/users/billy/desktop/test/'+str(Node.objects.filter(ID=ID).get().__str__())
-        drive = os.path.normpath(filedrive)
-        if os.path.exists(drive):
-            for file in os.listdir(drive):
-                filename = os.fsdecode(file)
-                if filename.endswith(".txt"):
-                    list.append((filename, filename))
-            form = UpdateForm(list)
-            return render(request, 'ESPUpdatePage.html', {'form': form})
-        else:
-            args = {}
-            template = loader.get_template('ESPUpdatePage.html')
-            args['mytext'] = "Error, Folder at path:" + drive + "  does not exist, create folder and place an " \
-                                                                "arduino file to be uploaded before trying again"
-            return HttpResponse(template.render(args, request))
+        #if form.is_valid():
 
+        newdir = str(Node.objects.filter(ID=nodeID).get().__str__())
+        #newespfile = finders.find('static/default_' + Node.objects.filter(ID=nodeID).get().Type + '.css')
+        #cmd2 = "arduino --pref build.path=C:\\users\\billy\\desktop\\test\\"+newdir+"--verify C:\\users\\billy\\dekstop\\" \
+                                                                                    #"djangoard\\"+newespfile+".ino"
+        newerdir = newdir.replace(" ", "_")
+        ip = Node.objects.filter(ID=nodeID).get().LocalIP
+        if waitingNodes.objects.all().first():
+            ip = waitingNodes.objects.all().first().IP
+            waitingNodes.objects.first().delete()
+        fullfile = newdir[:-2] + ".ino.generic.bin"
+        newestdir = newerdir + "/" + fullfile
+        file = str("C:/users/billy/desktop/test/" + newestdir)#the file containinf the code
+        commd = str("python c:/users/billy/desktop/espota.py -d -i " + ip + " -f " + file)
+        os.system('cmd /c ' + commd)
+        template = loader.get_template('home.html')
+        if os.path.isfile('data.json'):
+            json_data = open('data.json')
+            data1 = json.loads(json_data.read())  # deserialises it
+            data2 = json.dumps(data1)  # json formatted string
+            json_data.close()
+            if addtojson() == data2:
+                data2 = data2.replace("\\", '')
+                data2 = data2[:-1]
+                data2 = data2[1:]
+                if request.session['container'] == data2:
+                    args['mytext'] = data2.strip()
+                    return HttpResponseRedirect(template.render(args, request))
+    filedrive = 'C:/users/billy/desktop/test/'+str(Node.objects.filter(ID=nodeID).get().__str__().replace(" ", "_"))
+    drive = os.path.normpath(filedrive)
+    if os.path.exists(drive):
+        for file in os.listdir(drive):
+            filename = os.fsdecode(file)
+            if filename.endswith(".bin"):
+                list.append((filename, filename))
+        form = UpdateForm(list)
+        return render(request, 'ESPUpdatePage.html', {'form': form})
+    else:
+        args = {}
+        template = loader.get_template('ESPUpdatePage.html')
+        args['mytext'] = "Error, Folder at path:" + drive + "  does not exist, create folder and place an " \
+                                                            "arduino file to be uploaded before trying again"
+        return HttpResponse(template.render(args, request))
 
 # nodemap works on specific request, page not redirecting on node register
 def nodeRegisterView(request):
@@ -150,6 +166,8 @@ def nodeRegisterView(request):
         del request.session['mapid']
     if request.method == 'POST':
         if os.path.isfile('data.json'):
+            if waitingNodes.objects.all().first():
+                request.session['waiting'] = "yes"
             # create a form instance and populate it with data from the request:
             form = NodeForm(request.POST)
             # check whether it's valid:
@@ -157,7 +175,7 @@ def nodeRegisterView(request):
                 form.save()
                 key = Node.objects.latest("Date_Added").ID
                 request.session['mapid'] = key
-                return HttpResponseRedirect('/nodeMapRegister')
+                return HttpResponseRedirect('/nodeMapRegister/')
 
         # if a GET (or any other method) we'll create a blank form
     else:
@@ -196,6 +214,9 @@ def nodeMapRegisterView(request):
                 with open('data.json', 'w', encoding='utf-8') as f:
                     json.dump(data2.strip(), f, ensure_ascii=False, indent=4)
                 args['mytext'] = data2.strip()
+                if 'waiting' in request.session:
+                    request.session["nodeID"] = obj.Node.ID
+                    return HttpResponseRedirect('/espupdate/')
                 return HttpResponseRedirect('/')
     else:
         form = MapNodeForm()
@@ -207,7 +228,7 @@ def nodeMapRegisterView(request):
 def readingPage(request):
     HighestUrl = "http://192.168.0.17/high"
     TempUrl = "http://192.168.0.17/temp"
-    try:
+    if isinstance(requests.get(url=HighestUrl).text, str) & isinstance(requests.get(url=TempUrl).text, str):
         highest = int(requests.get(url=HighestUrl).text.split(".")[0])
         temp = int(requests.get(url=TempUrl).text.split(".")[0])
         read = "current temperature"
@@ -216,7 +237,7 @@ def readingPage(request):
                 ,"backgroundColor": "#99ff33"},{"rule": "%v >= 20 && %v <= 25","backgroundColor": "#FFA500"},{"rule":
                 "%v >= 25","backgroundColor": "#DC143C"}])
         args = {'data': temp, 'highest': highest, 'read': read, 'rule': rule}
-    except:
+    else:
         highest = 0
         temp = 0
         error = "Reading Failed"
@@ -263,4 +284,4 @@ def waitingNodesView(request):
 
 
 def deletewaiting(request, ID):
-    waitingNodes.objects.filter(id=ID).delete()
+    waitingNodes.objects.all().first().delete()

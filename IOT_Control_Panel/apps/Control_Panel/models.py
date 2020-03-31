@@ -11,7 +11,7 @@ class Node(models.Model):
     LocalIP = models.GenericIPAddressField(protocol="IPv4", default="192.168.137.1", editable=False)
     AccessPointIP = models.GenericIPAddressField(protocol="IPv4", default="192.168.139.1", null=True, editable=False)
     OTAIP = models.GenericIPAddressField(protocol="IPv4", default="192.168.0.1", null=True, editable=False)
-    Sensor = models.CharField(max_length=64, default="N/A") #sensor attached to esp
+    Sensor = models.CharField(max_length=64, default="N/A", choices=[('Temperature', 'Temperature'), ('N/A', 'N/A')]) #sensor attached to esp
     Status = models.BooleanField() #connected or not
     Date_Added = models.DateTimeField(default=datetime.now)
 
@@ -73,3 +73,4 @@ class readingPageGenerator(models.Model):
 
 class waitingNodes(models.Model):
     ID = models.AutoField
+    IP = models.GenericIPAddressField(protocol="IPv4", default="192.168.0.28", editable=False)

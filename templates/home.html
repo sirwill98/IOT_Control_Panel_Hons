@@ -324,9 +324,9 @@
                                 }
                                 xmlHttp.open("GET", removeUrl, true); // true for asynchronous
                                 xmlHttp.send(null);
-                                document.getElementById("newnodebutton").removeAttribute("hidden");
-                                document.getElementById("newnode").removeAttribute("hidden");
-                                document.getElementById("newnode").setAttribute("hidden", "");
+                                document.getElementById("newnodebutton").hidden = false;
+                                document.getElementById("newnode").hidden = false;
+                                document.getElementById("makenode").hidden = true;
                             }
                         }
 

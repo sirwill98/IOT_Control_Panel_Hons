@@ -30,7 +30,8 @@ void setup(){
   Serial.println();
   WiFi.mode(WIFI_STA);
   WiFi.begin(ServerSSID, ServerPass);
-  while((WiFi.status() != WL_CONNECTED)) {
+  while((WiFi.status() != WL_CONNECTED))
+  {
     delay(500);
     Serial.print(".");
   }
