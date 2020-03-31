@@ -12,5 +12,7 @@ urlpatterns = [
     path('gateway/', views.homePageView2, name='gatewayView'),
     path('nodeMapRegister/', views.nodeMapRegisterView, name='node map register'),
     path('deletenode/<int:ID>', views.deletenode, name='Delete Node'),
-    path('reading/', views.readingPage, name='Latest Reading')
+    path('reading/', views.readingPage, name='Latest Reading'),
+    path('deletewaiting/<int:ID>', views.deletewaiting, name='Latest Reading'),
+    path('waitingNodes/', views.waitingNodesView, name='Waiting Nodes')
 ]

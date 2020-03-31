@@ -8,9 +8,9 @@ class Node(models.Model):
     ID = models.AutoField(primary_key=True)
     Type = models.CharField(max_length=64, choices=[('Gateway', 'Gateway'), ('Relay', 'Relay'), ('Endpoint', 'Endpoint')
                                                     ], blank=True, null=True)
-    LocalIP = models.GenericIPAddressField(protocol="IPv4", default="192.168.137.")
-    AccessPointIP = models.GenericIPAddressField(protocol="IPv4", default="192.168.139.", null=True)
-    OTAIP = models.GenericIPAddressField(protocol="IPv4", default="192.168.0.", null=True)
+    LocalIP = models.GenericIPAddressField(protocol="IPv4", default="192.168.137.1", editable=False)
+    AccessPointIP = models.GenericIPAddressField(protocol="IPv4", default="192.168.139.1", null=True, editable=False)
+    OTAIP = models.GenericIPAddressField(protocol="IPv4", default="192.168.0.1", null=True, editable=False)
     Sensor = models.CharField(max_length=64, default="N/A") #sensor attached to esp
     Status = models.BooleanField() #connected or not
     Date_Added = models.DateTimeField(default=datetime.now)
@@ -24,7 +24,7 @@ class Node(models.Model):
         otaipstr = str(self.OTAIP)
         self.LocalIP = self.LocalIP[:ipstr.rfind(".")] + "." + str(Node.objects.latest('Date_Added').ID+1)
         self.AccessPointIP = self.AccessPointIP[:apipstr.rfind(".")] + "." + str(Node.objects.latest('Date_Added').ID+1)
-        self.OTAIP = self.OTAIP[:otaipstr.rfind(".")] + "." + str(Node.objects.latest('Date_Added').ID+100)
+        self.OTAIP = self.OTAIP[:otaipstr.rfind(".")] + "." + str(Node.objects.latest('Date_Added').ID+101)
         super().save(*args, **kwargs)
 
     def create_node(self, Type, Sensor, Status, LocalIP, AccessPointIP):
@@ -62,9 +62,14 @@ class Reading(models.Model):
         reading.save()
         return reading
 
+
 class readingPageGenerator(models.Model):
     Page_ID = models.AutoField(primary_key=True)
     Lowest = models.IntegerField()
     Highest = models.IntegerField()
+    Increment = models.IntegerField()
     Scale = JSONField(null=True)
 
+
+class waitingNodes(models.Model):
+    ID = models.AutoField

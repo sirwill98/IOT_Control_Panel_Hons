@@ -4,7 +4,7 @@ from django.shortcuts import render
 from django.http import HttpResponse, HttpResponseRedirect
 import json
 from django.contrib import messages
-from .models import Node, Map_Node
+from .models import Node, Map_Node, waitingNodes
 from .forms import NodeForm, MapNodeForm, UpdateForm, PreUpdateForm
 from django.template import loader
 from django.views.generic.edit import UpdateView
@@ -51,7 +51,7 @@ def homePageView(request):
     template = loader.get_template('home.html')
     if os.path.isfile('data.json'):
         json_data = open('data.json')
-        data1 = json.loads(json_data.read())  # deserialises it
+        data1 = json.loads(json_data.read())  # deserialize it
         data2 = json.dumps(data1)  # json formatted string
         json_data.close()
         if addtojson() == data2:
@@ -85,8 +85,8 @@ def nodePageView(request):
 
 
 def nodeEspRegisterView(request):
-    messages.info(request, 'A new node has connected, to set it up click the add node button')
-    messages.add_message(request, messages.INFO, 'Hello world.')
+    obj = waitingNodes()
+    obj.save()
     return HttpResponse(request)
 
 
@@ -215,7 +215,6 @@ def readingPage(request):
                 "#6ec0ef"},{"rule": "%v >= 10 && %v <= 15","backgroundColor": "#66ff99"},{"rule": "%v >= 15 && %v <= 20"
                 ,"backgroundColor": "#99ff33"},{"rule": "%v >= 20 && %v <= 25","backgroundColor": "#FFA500"},{"rule":
                 "%v >= 25","backgroundColor": "#DC143C"}])
-        print(rule)
         args = {'data': temp, 'highest': highest, 'read': read, 'rule': rule}
     except:
         highest = 0
@@ -253,3 +252,15 @@ def deletenode(request, ID):
         with open('data.json', 'w', encoding='utf-8') as f:
             json.dump(jsonContainer.strip(), f, ensure_ascii=False, indent=4)
     return HttpResponse(template.render(args, request))
+
+
+def waitingNodesView(request):
+    query_results = waitingNodes.objects.all()
+    args = {"query_results": query_results}
+    print(query_results)
+    template = loader.get_template('NodePreRegister.html')
+    return HttpResponse(template.render(args, request))
+
+
+def deletewaiting(request, ID):
+    waitingNodes.objects.filter(id=ID).delete()

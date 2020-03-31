@@ -15,22 +15,24 @@
   <meta name="description" content="An organization chart editor -- edit details and change relationships." />
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <!-- Copyright 1998-2020 by Northwoods Software Corporation. -->
-    <script src="https://unpkg.com/gojs/release/go-debug.js"></script>
+  <script src="https://unpkg.com/gojs/release/go-debug.js"></script>
   <script src="https://unpkg.com/gojs/release/go.js"></script>
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.0/jquery.min.js"></script>
+  <script src="https://code.jquery.com/jquery-3.1.0.min.js"></script>
   <link rel="stylesheet" href="https://unpkg.com/gojs/extensions/dataInspector.css" />
   <script src="https://cdn.jsdelivr.net/npm/gojs@2.1.9/extensions/DataInspector.js"></script>
 
   <script id="code">
     function init() {
       if (window.goSamples) goSamples();  // init for these samples -- you don't need to call this
-      var $ = go.GraphObject.make;  // for conciseness in defining templates
+      var QQ = go.GraphObject.make;  // for conciseness in defining templates
       myDiagram =
-        $(go.Diagram, "myDiagramDiv", // must be the ID or reference to div
+        QQ(go.Diagram, "myDiagramDiv", // must be the ID or reference to div
           {
             maxSelectionCount: 1, // users can select only one part at a time
             validCycle: go.Diagram.CycleDestinationTree, // make sure users can only create trees
             layout:
-              $(go.TreeLayout,
+              QQ(go.TreeLayout,
                 {
                   treeStyle: go.TreeLayout.StyleLastParents,
                   arrangement: go.TreeLayout.ArrangementHorizontal,
@@ -93,7 +95,7 @@
             var level = v.level % (levelColors.length);
             var color = levelColors[level];
             var shape = v.node.findObject("SHAPE");
-            if (shape) shape.stroke = $(go.Brush, "Linear", { 0: color, 1: go.Brush.lightenBy(color, 0.05), start: go.Spot.Left, end: go.Spot.Right });
+            if (shape) shape.stroke = QQ(go.Brush, "Linear", { 0: color, 1: go.Brush.lightenBy(color, 0.05), start: go.Spot.Left, end: go.Spot.Right });
           }
         });
       };
@@ -126,7 +128,7 @@
 
       // define the Node template
       myDiagram.nodeTemplate =
-        $(go.Node, "Auto",
+        QQ(go.Node, "Auto",
           { doubleClick: nodeDoubleClick },
           { // handle dragging a Node onto a Node to (maybe) change the reporting relationship
             mouseDragEnter: function(e, node, prev) {
@@ -166,14 +168,14 @@
           // bind the Part.layerName to control the Node's layer depending on whether it isSelected
           new go.Binding("layerName", "isSelected", function(sel) { return sel ? "Foreground" : ""; }).ofObject(),
           // define the node's outer shape
-          $(go.Shape, "Rectangle",
+          QQ(go.Shape, "Rectangle",
             {
               name: "SHAPE", fill: "#333333", stroke: 'white', strokeWidth: 3.5,
               // set the port properties:
               portId: "", fromLinkable: true, toLinkable: true, cursor: "pointer"
             }),
-          $(go.Panel, "Horizontal",
-            $(go.Picture,
+          QQ(go.Panel, "Horizontal",
+            QQ(go.Picture,
               {
                 name: "Picture",
                 desiredSize: new go.Size(70, 70),
@@ -181,15 +183,15 @@
               },
               new go.Binding("source", "key", findHeadShot)),
             // define the panel where the text will appear
-            $(go.Panel, "Table",
+            QQ(go.Panel, "Table",
               {
                 minSize: new go.Size(130, NaN),
                 maxSize: new go.Size(150, NaN),
                 margin: new go.Margin(6, 10, 0, 6),
                 defaultAlignment: go.Spot.Left
               },
-              $(go.RowColumnDefinition, { column: 2, width: 4 }),
-              $(go.TextBlock, textStyle(),  // the name
+              QQ(go.RowColumnDefinition, { column: 2, width: 4 }),
+              QQ(go.TextBlock, textStyle(),  // the name
                 {
                   row: 0, column: 0, columnSpan: 5,
                   font: "12pt Segoe UI,sans-serif",
@@ -197,9 +199,9 @@
                   minSize: new go.Size(10, 16)
                 },
                 new go.Binding("text", "name").makeTwoWay()),
-              $(go.TextBlock, "Title: ", textStyle(),
+              QQ(go.TextBlock, "Title: ", textStyle(),
                 { row: 1, column: 0 }),
-              $(go.TextBlock, textStyle(),
+              QQ(go.TextBlock, textStyle(),
                 {
                   row: 1, column: 1, columnSpan: 4,
                   editable: true, isMultiline: false,
@@ -207,13 +209,13 @@
                   margin: new go.Margin(0, 0, 0, 3)
                 },
                 new go.Binding("text", "title").makeTwoWay()),
-              $(go.TextBlock, textStyle(),
+              QQ(go.TextBlock, textStyle(),
                 { row: 2, column: 0 },
                 new go.Binding("text", "key", function(v) { return "ID: " + v; })),
-              $(go.TextBlock, textStyle(),
+              QQ(go.TextBlock, textStyle(),
                 { name: "Node_Above", row: 2, column: 3, }, // we include a name so we can access this TextBlock when deleting Nodes/Links
                 new go.Binding("text", "parent", function(v) { return "Node_Above: " + v; })),
-              $(go.TextBlock, textStyle(),  // the comments
+              QQ(go.TextBlock, textStyle(),  // the comments
                 {
                   row: 3, column: 0, columnSpan: 5,
                   font: "italic 9pt sans-serif",
@@ -229,9 +231,9 @@
       // the context menu allows users to make a position vacant,
       // remove a role and reassign the subtree, or remove a department
       myDiagram.nodeTemplate.contextMenu =
-        $("ContextMenu",
-          $("ContextMenuButton",
-            $(go.TextBlock, "Remove node"),
+        QQ("ContextMenu",
+          QQ("ContextMenuButton",
+            QQ(go.TextBlock, "Remove node"),
             {
               click: function(e, obj) {
                 // reparent the subtree to this node's Node_Above, then remove the node
@@ -253,8 +255,8 @@
               }
             }
           ),
-        $("ContextMenuButton",
-            $(go.TextBlock, "Update node code"),
+        QQ("ContextMenuButton",
+            QQ(go.TextBlock, "Update node code"),
             {
               click: function(e, obj) {
                 var node = obj.part.adornedPart;
@@ -268,9 +270,9 @@
 
       // define the Link template
       myDiagram.linkTemplate =
-        $(go.Link, go.Link.Orthogonal,
+        QQ(go.Link, go.Link.Orthogonal,
           { corner: 5, relinkableFrom: true, relinkableTo: true },
-          $(go.Shape, { strokeWidth: 1.5, stroke: "#F5F5F5" }));  // the link shape
+          QQ(go.Shape, { strokeWidth: 1.5, stroke: "#F5F5F5" }));  // the link shape
 
       function load() {
       myDiagram.model = go.Model.fromJson(document.getElementById("mySavedModel").value);
@@ -299,7 +301,38 @@
       document.getElementById('zoomToFit').addEventListener('click', function() {
         myDiagram.commandHandler.zoomToFit();
       });
+        function fetch_data()
+        {
+            $.ajax(
+                {
+                    type: "GET",
+                    url: "/waitingNodes",
+                    success: function (data) {
+                        var rowCount = data.search("td");
+                        var test = data.indexOf("td>");
+                        var id = data[test+3];
+                        if(!isNaN(id))
+                        {
+                            var removeUrl = '/deletewaiting/' + id;
+                            if(rowCount)
+                            {
+                                var xmlHttp = new XMLHttpRequest();
+                                xmlHttp.onreadystatechange = function()
+                                {
+                                    if (xmlHttp.readyState == 4 && xmlHttp.status == 200)
+                                        callback(xmlHttp.responseText);
+                                }
+                                xmlHttp.open("GET", removeUrl, true); // true for asynchronous
+                                xmlHttp.send(null);
+                                document.getElementById("newnodebutton").removeAttribute("hidden");
+                                document.getElementById("newnode").removeAttribute("hidden");
+                                document.getElementById("newnode").setAttribute("hidden", "");
+                            }
+                        }
 
+                    }
+                });
+        }
       document.getElementById('centerRoot').addEventListener('click', function() {
         myDiagram.scale = 1;
         myDiagram.commandHandler.scrollToPart(myDiagram.findNodeForKey(1));
@@ -307,6 +340,10 @@
       window.setInterval(function()
       {
         reloadIFrame()
+      }, 5000);
+      window.setInterval(function()
+      {
+         fetch_data()
       }, 5000);
       function reloadIFrame()
       {
@@ -322,16 +359,20 @@
 <div id="sample">
     <div id="myDiagramDiv" style="background-color: #34343C; border: solid 1px black; height: 570px;"></div>
     <iframe src="{% url 'Latest Reading' %}" width="300" height="250" scrolling="no" id="tempframe"></iframe>
-    <p><button id="zoomToFit">Zoom to Fit</button> <button id="centerRoot">Center on root</button></p>
+    <p><button id="zoomToFit" hidden>Zoom to Fit</button> <button id="centerRoot" hidden>Center on root</button></p>
+    <h2 hidden id="newnode"> A new node has connected to the server click the button below to set it up</h2>
     <form>
-        <button formaction="{% url 'node register' %}">Create Node</button>
+        <button formaction="{% url 'node register' %}" hidden id="newnodebutton">Register New Node</button>
+    </form>
+    <form>
+        <button formaction="{% url 'node register' %}" id="makenode">Create Node</button>
     </form>
     <div>
         <div id="myInspector">
         </div>
     </div>
     <div>
-        <textarea id="mySavedModel" style="width:100%; height:270px;">
+        <textarea id="mySavedModel" style="width:100%; height:270px;" hidden>
             {% block includes %}
             {{ mytext }}
             {% endblock includes %}

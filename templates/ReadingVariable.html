@@ -17,9 +17,8 @@
       height: 100%;
       width: 100%;
       min-height: 150px;
-        z-index:-1;
     }
-    h3 {text-align:center;}
+
     .zc-ref {
       display: none;
     }
@@ -27,9 +26,6 @@
     .error
     {
         font-family: Arial, Helvetica, sans-serif;
-        position:absolute;
-        z-index:100;
-        text-align: center;
     }
   </style>
 </head>
@@ -45,7 +41,7 @@
         {{ highest }}
       {% endblock inc %}
   </h1>
-  <h3 class="error" id="error">
+  <h3 class="error" align="center">
   {% block read %}
       {{ read }}
   {% endblock read %}
@@ -54,14 +50,13 @@
   {% endblock error %}
   </h3>
   <div id='myChart'><a class="zc-ref" href="https://www.zingchart.com/"></a></div>
-  <script>
+<script>
     //ZC.LICENSE = ["569d52cefae586f634c54f86dc99e6a9", "b55b025e438fa8a98e32482b5f768ff5"];
-    var highest = 30;
+    var highest = parseInt(document.getElementById('highest').textContent);
+    var lowest = parseInt(document.getElementById('lowest').textContent);
     var data = parseInt(document.getElementById('data').textContent);
-    //cunts fucked
-    var test = {{ rule|safe }};
-    console.log(test);
-    //test=test.replace(/\\"/g, '"');
+    var Increment = parseInt(document.getElementById('Increment').textContent);
+
     var myConfig = {
       type: "gauge",
       globals: {
@@ -87,7 +82,7 @@
       },
       scaleR: {
         aperture: 180,
-        "values":"0:" + highest + ":1",
+        "values":"0:" + highest + ":" + Increment,
         center: {
           visible: false
         },
@@ -101,15 +96,34 @@
             offsetX: 15
           }]
         },
-        labels: ['0', '', '', '', '', ''
-                , '', '', '', '', ''
-        , '', '', '', '', ''
-        , '', '', '', '', ''
-        , '', '', '', '', ''
-        , '', '', '', '', '30'],
+        labels: [lowest, highest],
         ring: {
           size: 10,
-          rules:test
+          rules: [{
+              rule: '%v <= 5',
+              backgroundColor: '#0d98e5'
+            },
+            {
+              rule: '%v >= 5 && %v <= 10',
+              backgroundColor: '#6ec0ef'
+            },
+            {
+              rule: '%v >= 10 && %v <= 15',
+              backgroundColor: '#66ff99'
+            },
+            {
+              rule: '%v >= 15 && %v <= 20',
+              backgroundColor: '#99ff33'
+            },
+            {
+              rule: '%v >= 20 && %v <= 25',
+              backgroundColor: '#FFA500'
+            },
+            {
+              rule: '%v >= 25',
+              backgroundColor: '#DC143C'
+            }
+          ]
         }
       },
       series: [{
@@ -128,7 +142,7 @@
     zingchart.render({
       id: 'myChart',
       data: myConfig,
-      height: 265,
+      height: 250,
       width: '100%'
     });
   </script>
